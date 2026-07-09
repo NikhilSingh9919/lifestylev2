@@ -41,7 +41,7 @@ export default function CartDrawer() {
           >
             {/* Drawer Header */}
             <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
-              <h2 className="text-lg font-semibold tracking-wider">YOUR BAG</h2>
+              <h2 className="text-lg font-semibold ">YOUR BAG</h2>
               <button
                 onClick={() => setIsOpen(false)}
                 className="rounded-full p-1.5 text-neutral-400 hover:bg-white/10 hover:text-white transition-all duration-300"
@@ -86,7 +86,7 @@ export default function CartDrawer() {
                     <div className="flex flex-1 flex-col justify-between">
                       <div className="flex justify-between text-sm">
                         <div>
-                          <h3 className="font-medium tracking-wide text-neutral-100">{item.title}</h3>
+                          <h3 className="font-medium text-neutral-100">{item.title}</h3>
                           <p className="mt-1 text-xs text-neutral-400 font-light">Price: ${item.price}</p>
                         </div>
                         <p className="font-semibold text-indigo-400">${(parseFloat(item.price) * item.quantity).toFixed(2)}</p>
@@ -129,7 +129,7 @@ export default function CartDrawer() {
             {cart.length > 0 && (
               <div className="border-t border-white/10 bg-neutral-900/50 px-6 py-6 space-y-4">
                 <div className="flex justify-between text-base font-semibold">
-                  <span className="tracking-wider text-neutral-300">SUBTOTAL</span>
+                  <span className="text-neutral-300">SUBTOTAL</span>
                   <span className="text-white">${cartSubtotal.toFixed(2)}</span>
                 </div>
                 <p className="text-xs text-neutral-400 font-light">
@@ -140,17 +140,17 @@ export default function CartDrawer() {
                 <button
                   disabled={isCheckingOut}
                   onClick={checkout}
-                  className="relative flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3.5 text-sm font-semibold tracking-wider text-white shadow-xl shadow-indigo-600/30 hover:opacity-90 disabled:opacity-50 transition-all duration-300 cursor-pointer"
+                  className="relative flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3.5 text-sm font-semibold text-white shadow-xl shadow-indigo-600/30 hover:opacity-90 disabled:opacity-50 transition-all duration-300 cursor-pointer font-sans"
                 >
                   {isCheckingOut ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      REDIRECTING TO SECURE CHECKOUT...
+                      Redirecting to secure checkout...
                     </>
                   ) : (
                     <>
                       <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                      SECURE CHECKOUT ON SHOPIFY
+                      Secure checkout on shopify
                     </>
                   )}
                 </button>

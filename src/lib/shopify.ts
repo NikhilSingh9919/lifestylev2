@@ -34,6 +34,10 @@ export interface ShopifyProduct {
 const mockInventory: Record<string, number> = {
   'pomabrush-hero': 15,
   'pomafloss-floating': 8,
+  'pomabrush': 12,
+  'pomafloss': 20,
+  'pomabru': 5,
+  'pomaaccessoris': 50,
 };
 
 const listeners = new Set<() => void>();
@@ -55,22 +59,22 @@ export const mockInventoryStore = {
 };
 
 export function getMockProduct(handle: string): ShopifyProduct | null {
-  if (handle === 'pomabrush-hero') {
+  if (handle === 'pomabrush-hero' || handle === 'pomabrush') {
     return {
-      id: 'gid://shopify/ProductVariant/421389028', // Mock Shopify Variant ID
-      title: 'PomaBrush Sonic Toothbrush',
-      handle: 'pomabrush-hero',
-      description: 'Sleek, lightweight, and ultra-quiet sonic toothbrush. Up to 4 months of battery life on a single charge. Finished in premium anodized aluminum.',
+      id: 'gid://shopify/ProductVariant/421389028',
+      title: 'pomabrush model 2.0',
+      handle: handle,
+      description: 'Engineered to perform beautifully, the pomabrush combines advanced sonic technology with sleek, travel-ready design.',
       priceRange: {
         minVariantPrice: {
-          amount: '79.00',
+          amount: '135.00',
         },
       },
       images: {
         nodes: [
           {
-            url: '/assets/products/pomabrush-hero.png',
-            altText: 'PomaBrush Sonic Toothbrush',
+            url: '/assets/figma/hero-featured.png',
+            altText: 'pomabrush model 2.0',
           },
         ],
       },
@@ -79,8 +83,8 @@ export function getMockProduct(handle: string): ShopifyProduct | null {
           {
             id: 'gid://shopify/ProductVariant/421389028',
             title: 'Charcoal Black',
-            price: '79.00',
-            sku: 'PB-BLACK-01',
+            price: '135.00',
+            sku: 'PB-BLACK-02',
             availableForSale: true,
             quantityAvailable: 15,
           },
@@ -89,11 +93,11 @@ export function getMockProduct(handle: string): ShopifyProduct | null {
     };
   }
 
-  if (handle === 'pomafloss-floating') {
+  if (handle === 'pomafloss-floating' || handle === 'pomafloss') {
     return {
-      id: 'gid://shopify/ProductVariant/901847102', // Mock Shopify Variant ID
-      title: 'PomaFloss Floating Dispenser',
-      handle: 'pomafloss-floating',
+      id: 'gid://shopify/ProductVariant/901847102',
+      title: 'pomafloss',
+      handle: handle,
       description: 'Magnetic wall-mount dental floss dispenser. Weightless aesthetic, clean storage, and premium organic expanding floss.',
       priceRange: {
         minVariantPrice: {
@@ -103,7 +107,7 @@ export function getMockProduct(handle: string): ShopifyProduct | null {
       images: {
         nodes: [
           {
-            url: '/assets/products/pomafloss-floating.png',
+            url: '/assets/figma/lineup-pomafloss.png',
             altText: 'PomaFloss Floating Dispenser',
           },
         ],
@@ -114,9 +118,77 @@ export function getMockProduct(handle: string): ShopifyProduct | null {
             id: 'gid://shopify/ProductVariant/901847102',
             title: 'Satin Gold',
             price: '19.00',
-            sku: 'PF-GOLD-01',
+            sku: 'PF-GOLD-02',
             availableForSale: true,
             quantityAvailable: 8,
+          },
+        ],
+      },
+    };
+  }
+
+  if (handle === 'pomabru') {
+    return {
+      id: 'gid://shopify/ProductVariant/887711223',
+      title: 'pomabru espresso maker',
+      handle: 'pomabru',
+      description: 'From early flights to quiet mountain mornings, it reimagines the ritual of espresso for modern travel-combining convenience, precision, and the pleasure of a perfect cup, wherever you go.',
+      priceRange: {
+        minVariantPrice: {
+          amount: '135.00',
+        },
+      },
+      images: {
+        nodes: [
+          {
+            url: '/assets/figma/lineup-pomabru.png',
+            altText: 'PomaBru Espresso Maker',
+          },
+        ],
+      },
+      variants: {
+        nodes: [
+          {
+            id: 'gid://shopify/ProductVariant/887711223',
+            title: 'Travel Edition',
+            price: '135.00',
+            sku: 'PB-BRU-01',
+            availableForSale: true,
+            quantityAvailable: 5,
+          },
+        ],
+      },
+    };
+  }
+
+  if (handle === 'pomaaccessoris') {
+    return {
+      id: 'gid://shopify/ProductVariant/774433991',
+      title: 'pomabrush advanced brush heads - pack of 4',
+      handle: 'pomaaccessoris',
+      description: 'Engineered to perform beautifully, the pomabrush combines advanced sonic technology with sleek, travel-ready design.',
+      priceRange: {
+        minVariantPrice: {
+          amount: '135.00',
+        },
+      },
+      images: {
+        nodes: [
+          {
+            url: '/assets/figma/accessory-1.png',
+            altText: 'pomabrush advanced brush heads - pack of 4',
+          },
+        ],
+      },
+      variants: {
+        nodes: [
+          {
+            id: 'gid://shopify/ProductVariant/774433991',
+            title: 'Carbon Brush Heads',
+            price: '135.00',
+            sku: 'PB-ACC-01',
+            availableForSale: true,
+            quantityAvailable: 50,
           },
         ],
       },

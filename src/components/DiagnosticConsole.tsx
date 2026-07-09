@@ -51,7 +51,7 @@ export default function DiagnosticConsole() {
       {/* Mini toggle floating badge */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2.5 text-xs font-semibold tracking-wider text-white shadow-xl shadow-indigo-600/30 hover:bg-indigo-500 transition-colors cursor-pointer"
+        className="flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xl shadow-indigo-600/30 hover:bg-indigo-500 transition-colors cursor-pointer"
       >
         <Terminal className="h-4 w-4" />
         DIAGNOSTIC TEST CENTER
@@ -69,7 +69,7 @@ export default function DiagnosticConsole() {
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-white/5 pb-3">
-              <span className="flex items-center gap-2 text-xs font-bold tracking-widest text-indigo-400">
+              <span className="flex items-center gap-2 text-xs font-bold text-indigo-400">
                 <Shield className="h-4 w-4" />
                 SYSTEM TEST RUNNER
               </span>
@@ -78,7 +78,7 @@ export default function DiagnosticConsole() {
 
             {/* Simulated Controls */}
             <div className="mt-4 space-y-3">
-              <h4 className="text-[11px] font-bold tracking-wider text-neutral-400 uppercase">Interactive Stock Mocking</h4>
+              <h4 className="text-[11px] font-bold text-neutral-400 uppercase">Interactive Stock Mocking</h4>
               
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <button
@@ -116,11 +116,11 @@ export default function DiagnosticConsole() {
             {/* Test Results Dashboard */}
             <div className="mt-4 space-y-2">
               <div className="flex items-center justify-between">
-                <h4 className="text-[11px] font-bold tracking-wider text-neutral-400 uppercase">Diagnostic Dashboard</h4>
+                <h4 className="text-[11px] font-bold text-neutral-400 uppercase">Diagnostic Dashboard</h4>
                 <button
                   onClick={runDiagnostics}
                   disabled={isRunning}
-                  className="flex items-center gap-1 rounded bg-indigo-600 px-2 py-1 text-[10px] font-bold tracking-widest uppercase hover:bg-indigo-500 disabled:opacity-50 transition-colors cursor-pointer"
+                  className="flex items-center gap-1 rounded bg-indigo-600 px-2 py-1 text-[10px] font-bold uppercase hover:bg-indigo-500 disabled:opacity-50 transition-colors cursor-pointer"
                 >
                   {isRunning ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
                   RUN SUITE
@@ -144,7 +144,7 @@ export default function DiagnosticConsole() {
 
             {/* Terminal Window Logs */}
             <div className="mt-4">
-              <h4 className="text-[11px] font-bold tracking-wider text-neutral-400 uppercase mb-1">Execution Terminal</h4>
+              <h4 className="text-[11px] font-bold text-neutral-400 uppercase mb-1">Execution Terminal</h4>
               <div className="h-32 overflow-y-auto rounded-lg bg-neutral-900/50 p-2 font-mono text-[9px] text-neutral-300 leading-relaxed border border-white/5 space-y-1">
                 {logs.length === 0 ? (
                   <p className="text-neutral-500 font-light">Idle. Click &quot;RUN SUITE&quot; above to initiate live E2E diagnostics validation.</p>
