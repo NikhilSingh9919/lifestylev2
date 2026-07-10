@@ -2,13 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Navbar from '@/components/Navbar';
-import CartDrawer from '@/components/CartDrawer';
-import DiagnosticConsole from '@/components/DiagnosticConsole';
-import { CartProvider, useCart } from '@/context/CartContext';
+import { useCart } from '@/context/CartContext';
 import { useShopifyProduct } from '@/hooks/useShopifyProduct';
 import { ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 // Inline Product Card for bestsellers and accessories
 interface ProductCardProps {
@@ -41,7 +39,13 @@ function ProductCard({ handle, imageOverride, titleOverride, descriptionOverride
     );
   }
 
-  const primaryVariant = product.variants.nodes[0];
+  const primaryVariant = product.variants.nodes.find(v => {
+    const titleLower = v.title.toLowerCase();
+    if (selectedColor === 'black') return titleLower.includes('black') || titleLower.includes('charcoal');
+    if (selectedColor === 'white') return titleLower.includes('white') || titleLower.includes('cotton');
+    return true;
+  }) || product.variants.nodes[0];
+
   const price = priceOverride || primaryVariant?.price || product.priceRange.minVariantPrice.amount;
   const imageUrl = imageOverride || product.images.nodes[0]?.url || '/assets/products/placeholder.png';
   const title = titleOverride || product.title;
@@ -51,7 +55,7 @@ function ProductCard({ handle, imageOverride, titleOverride, descriptionOverride
     addToCart({
       variantId: primaryVariant.id,
       productId: product.id,
-      title: `${title} (${selectedColor === 'black' ? 'Charcoal Black' : 'Cotton White'})`,
+      title: `${title} (${primaryVariant.title})`,
       price,
       imageUrl,
       handle: product.handle,
@@ -68,7 +72,7 @@ function ProductCard({ handle, imageOverride, titleOverride, descriptionOverride
     >
       <div>
         {/* White Image Container (1:1 aspect-square, covers card, rounded-8px) */}
-        <div className="relative aspect-square w-full rounded-[8px] bg-white flex items-center justify-center overflow-hidden mb-[20px] border border-neutral-100/50">
+        <Link href={`/products/${handle}`} className="cursor-pointer block relative aspect-square w-full rounded-[8px] bg-white flex items-center justify-center overflow-hidden mb-[20px] border border-neutral-100/50">
           <Image
             src={imageUrl}
             alt={title}
@@ -76,27 +80,31 @@ function ProductCard({ handle, imageOverride, titleOverride, descriptionOverride
             className="object-cover hover:scale-105 transition-transform duration-500 rounded-[8px]"
             sizes="(max-width: 768px) 100vw, 33vw"
           />
-        </div>
+        </Link>
 
         {/* Color Selectors (24px circles) */}
-        <div className="flex gap-2 mb-4">
-          <button
-            onClick={() => setSelectedColor('black')}
-            className={`w-6 h-6 rounded-full border bg-neutral-900 transition-all ${selectedColor === 'black' ? 'border-neutral-900 scale-110 ring-2 ring-neutral-300' : 'border-transparent opacity-60'
-              }`}
-            aria-label="Select Charcoal Black"
-          />
-          <button
-            onClick={() => setSelectedColor('white')}
-            className={`w-6 h-6 rounded-full border bg-white transition-all ${selectedColor === 'white' ? 'border-neutral-950 scale-110 ring-2 ring-neutral-300' : 'border-transparent opacity-60'
-              }`}
-            aria-label="Select Cotton White"
-          />
-        </div>
+        {product.variants.nodes.length > 1 && (
+          <div className="flex gap-2 mb-4">
+            <button
+              onClick={() => setSelectedColor('black')}
+              className={`w-6 h-6 rounded-full border bg-neutral-900 transition-all ${selectedColor === 'black' ? 'border-neutral-900 scale-110 ring-2 ring-neutral-300' : 'border-transparent opacity-60'
+                }`}
+              aria-label="Select Charcoal Black"
+            />
+            <button
+              onClick={() => setSelectedColor('white')}
+              className={`w-6 h-6 rounded-full border bg-white transition-all ${selectedColor === 'white' ? 'border-neutral-950 scale-110 ring-2 ring-neutral-300' : 'border-transparent opacity-60'
+                }`}
+              aria-label="Select Cotton White"
+            />
+          </div>
+        )}
 
         {/* Title and Info */}
-        <h3 className="text-[20px] font-semibold text-neutral-900 leading-snug mb-2 font-sans lowercase">
-          {title}
+        <h3 className="text-[20px] font-semibold text-neutral-900 leading-snug mb-2 font-sans lowercase hover:underline">
+          <Link href={`/products/${handle}`}>
+            {title}
+          </Link>
         </h3>
         {!hideDescription && (
           <p className="text-[16px] font-normal text-neutral-500 leading-relaxed font-sans line-clamp-2">
@@ -163,7 +171,7 @@ function PomaHome() {
       productId: heroProduct.id,
       title: heroProduct.title,
       price: variant.price,
-      imageUrl: heroProduct.images.nodes[0].url,
+      imageUrl: heroProduct.images?.nodes?.[0]?.url || '/assets/figma/hero-featured.png',
       handle: heroProduct.handle,
     });
   };
@@ -173,10 +181,10 @@ function PomaHome() {
     const variant = bruProduct.variants.nodes[0];
     addToCart({
       variantId: variant.id,
-      productId: heroProduct?.id || 'pomabru',
+      productId: bruProduct.id,
       title: bruProduct.title,
       price: variant.price,
-      imageUrl: bruProduct.images.nodes[0].url,
+      imageUrl: bruProduct.images?.nodes?.[0]?.url || '/assets/figma/lineup-pomabru.png',
       handle: bruProduct.handle,
     });
   };
@@ -189,7 +197,7 @@ function PomaHome() {
       productId: flossProduct.id,
       title: flossProduct.title,
       price: variant.price,
-      imageUrl: flossProduct.images.nodes[0].url,
+      imageUrl: flossProduct.images?.nodes?.[0]?.url || '/assets/figma/lineup-pomafloss.png',
       handle: flossProduct.handle,
     });
   };
@@ -222,8 +230,6 @@ function PomaHome() {
 
   return (
     <div className="min-h-screen bg-white text-neutral-900 font-sans selection:bg-neutral-900 selection:text-white">
-      <Navbar />
-
       <main>
         {/* HERO SECTION / Frame 2 */}
         <section className="relative h-[720px] bg-[#111111] text-white flex flex-col justify-between overflow-hidden">
@@ -339,12 +345,9 @@ function PomaHome() {
                 { prefix: 'poma', suffix: 'bru', handle: 'pomabru', img: '/assets/figma/lineup-pomabru.png' },
                 { prefix: 'poma', suffix: 'accessoris', handle: 'pomaaccessoris', img: '/assets/figma/lineup-pomaaccessories.png' },
               ].map((item, idx) => (
-                <motion.div
+                <Link
                   key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
+                  href={`/products/${item.handle}`}
                   className="flex flex-col gap-5 cursor-pointer group"
                 >
                   <div className="relative aspect-[3/4] w-full flex items-center justify-center overflow-hidden rounded-[12px]">
@@ -358,7 +361,7 @@ function PomaHome() {
                   <h3 className="text-[32px] font-normal text-[#111111] leading-none group-hover:text-neutral-600 transition-colors lowercase">
                     <span className="font-semibold">{item.prefix}</span>{item.suffix}
                   </h3>
-                </motion.div>
+                </Link>
               ))}
             </div>
           </div>
@@ -439,23 +442,9 @@ function PomaHome() {
               </div>
               <div className="w-[296px] min-w-[296px] flex-shrink-0">
                 <ProductCard
-                  handle="pomabrush"
-                  imageOverride="/assets/figma/bestseller-2.png"
-                  titleOverride="pomabrush model 2.0"
-                />
-              </div>
-              <div className="w-[296px] min-w-[296px] flex-shrink-0">
-                <ProductCard
-                  handle="pomabrush"
-                  imageOverride="/assets/figma/bestseller-3.png"
-                  titleOverride="pomabrush model 2.0"
-                />
-              </div>
-              <div className="w-[296px] min-w-[296px] flex-shrink-0">
-                <ProductCard
-                  handle="pomabrush"
-                  imageOverride="/assets/figma/bestseller-4.png"
-                  titleOverride="pomabrush model 2.0"
+                  handle="pomabru"
+                  imageOverride="/assets/figma/lineup-pomabru.png"
+                  titleOverride="pomabru espresso maker"
                 />
               </div>
               <div className="w-[296px] min-w-[296px] flex-shrink-0">
@@ -463,6 +452,13 @@ function PomaHome() {
                   handle="pomafloss"
                   imageOverride="/assets/figma/lineup-pomafloss.png"
                   titleOverride="pomafloss active dispenser"
+                />
+              </div>
+              <div className="w-[296px] min-w-[296px] flex-shrink-0">
+                <ProductCard
+                  handle="pomaaccessoris"
+                  imageOverride="/assets/figma/accessory-1.png"
+                  titleOverride="pomabrush advanced brush heads"
                 />
               </div>
             </div>
@@ -561,19 +557,19 @@ function PomaHome() {
               </div>
               <div className="w-[296px] min-w-[296px] flex-shrink-0">
                 <ProductCard
-                  handle="pomaaccessoris"
+                  handle="pomaclip"
                   imageOverride="/assets/figma/accessory-4.png"
-                  titleOverride="pomabrush replacement case"
-                  descriptionOverride="Keep your toothbrush clean with the original charging travel case."
+                  titleOverride="pomaclip magnetic mount"
+                  descriptionOverride="Magnetic holder designed to hold PomaBrush cleanly on bathroom surfaces."
                   hideDescription={true}
                 />
               </div>
               <div className="w-[296px] min-w-[296px] flex-shrink-0">
                 <ProductCard
-                  handle="pomaaccessoris"
+                  handle="pomacloth"
                   imageOverride="/assets/figma/lineup-pomaaccessories.png"
-                  titleOverride="poma travel charger pouch"
-                  descriptionOverride="Compact tech pouch designed to organize and protect Poma accessories."
+                  titleOverride="pomacloth microfiber cloth"
+                  descriptionOverride="Microfiber cleaning cloth designed to wipe down the devices."
                   hideDescription={true}
                 />
               </div>
@@ -581,98 +577,10 @@ function PomaHome() {
           </div>
         </section>
       </main>
-
-      {/* FOOTER SECTION / Frame 22 */}
-      <footer className="bg-[#111111] text-white pt-20 pb-10 border-t border-white/5 relative font-sans">
-        <div className="mx-[80px] flex flex-col gap-16 font-sans">
-          {/* Top Footer Row */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-            <Image
-              src="/assets/branding/logo.svg"
-              alt="Poma Logo"
-              width={145}
-              height={40}
-              className="h-10 w-auto opacity-80"
-            />
-            {/* Social Buttons */}
-            <div className="flex gap-4">
-              {['facebook', 'instagram', 'linkedin'].map((social) => (
-                <a
-                  key={social}
-                  href={`https://${social}.com`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex h-14 w-14 items-center justify-center rounded-full bg-[#222222] border border-white/5 text-white hover:bg-neutral-800 transition-colors uppercase text-xs font-semibold font-sans"
-                >
-                  {social.substring(0, 2)}
-                </a>
-              ))}
-            </div>
-          </div>
-
-          {/* Links Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 pt-8 border-t border-white/5">
-            {/* Col 1 */}
-            <div className="flex flex-col gap-4">
-              <h4 className="text-xl font-bold text-white font-sans mb-2">shop</h4>
-              <a href="#shop" className="text-neutral-400 hover:text-white transition-colors text-lg font-normal">poma brush</a>
-              <a href="#shop" className="text-neutral-400 hover:text-white transition-colors text-lg font-normal">poma floss</a>
-              <a href="#shop" className="text-neutral-400 hover:text-white transition-colors text-lg font-normal">poma bru</a>
-              <a href="#shop" className="text-neutral-400 hover:text-white transition-colors text-lg font-normal">poma accessories</a>
-            </div>
-            {/* Col 2 */}
-            <div className="flex flex-col gap-4">
-              <h4 className="text-xl font-bold text-white font-sans mb-2">pomalifestyle</h4>
-              <a href="#" className="text-neutral-400 hover:text-white transition-colors text-lg font-normal">about us</a>
-              <a href="#" className="text-neutral-400 hover:text-white transition-colors text-lg font-normal">stories</a>
-            </div>
-            {/* Col 3 */}
-            <div className="flex flex-col gap-4">
-              <h4 className="text-xl font-bold text-white font-sans mb-2">support</h4>
-              <a href="#" className="text-neutral-400 hover:text-white transition-colors text-lg font-normal">contact us</a>
-              <a href="#" className="text-neutral-400 hover:text-white transition-colors text-lg font-normal">faq</a>
-              <a href="#" className="text-neutral-400 hover:text-white transition-colors text-lg font-normal">policies</a>
-              <a href="#" className="text-neutral-400 hover:text-white transition-colors text-lg font-normal">warranty</a>
-            </div>
-            {/* Col 4 */}
-            <div className="flex flex-col gap-4">
-              <h4 className="text-xl font-bold text-white font-sans mb-2">connect</h4>
-              <a href="https://facebook.com" className="text-neutral-400 hover:text-white transition-colors text-lg font-normal">facebook</a>
-              <a href="https://instagram.com" className="text-neutral-400 hover:text-white transition-colors text-lg font-normal">instagram</a>
-              <a href="https://linkedin.com" className="text-neutral-400 hover:text-white transition-colors text-lg font-normal">linkedIn</a>
-            </div>
-          </div>
-
-          {/* Large Brand Wordmark Graphic / Group 1 */}
-          <div className="relative w-full h-[120px] md:h-[169px] mt-8 flex justify-center items-center pointer-events-none opacity-20">
-            <Image
-              src="/assets/branding/logo.svg"
-              alt="POMA"
-              fill
-              className="object-contain"
-            />
-          </div>
-
-          {/* Copyright */}
-          <div className="text-center text-xs text-neutral-500 pt-8 border-t border-white/5 font-light font-sans">
-            <p>© {new Date().getFullYear()} POMA LIFESTYLE INC. HEADLESS E-COMMERCE CORE.</p>
-          </div>
-        </div>
-      </footer>
-
-      {/* Global Cart Drawer sliding overlay */}
-      <CartDrawer />
-
-      {/* E2E Test Suite Floating Terminal Console */}
-      <DiagnosticConsole />
     </div>
   );
 }
 
 export default function Home() {
-  return (
-    <CartProvider>
-      <PomaHome />
-    </CartProvider>
-  );
+  return <PomaHome />;
 }
