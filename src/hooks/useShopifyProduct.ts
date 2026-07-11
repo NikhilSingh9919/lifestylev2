@@ -45,6 +45,7 @@ export function useShopifyProduct(handle: string) {
               title
               handle
               description
+              tags
               priceRange {
                 minVariantPrice {
                   amount
@@ -84,10 +85,19 @@ export function useShopifyProduct(handle: string) {
                 {namespace: "custom", key: "compatible_with"},
                 {namespace: "custom", key: "shipping"},
                 {namespace: "custom", key: "product_description"},
-                {namespace: "custom", key: "warranty"}
+                {namespace: "custom", key: "warranty"},
+                {namespace: "custom", key: "promo_video"}
               ]) {
                 key
                 value
+                reference {
+                  ... on Video {
+                    sources {
+                      url
+                      mimeType
+                    }
+                  }
+                }
               }
             }
           }
@@ -124,6 +134,7 @@ export function useShopifyProduct(handle: string) {
             description: fetchedProduct.description,
             priceRange: fetchedProduct.priceRange,
             images: fetchedProduct.images,
+            tags: fetchedProduct.tags,
             variants: {
               nodes: fetchedProduct.variants.nodes.map((v: any) => ({
                 id: v.id,

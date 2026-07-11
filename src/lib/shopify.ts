@@ -36,9 +36,16 @@ export interface ShopifyProduct {
   variants: {
     nodes: ProductVariant[];
   };
+  tags?: string[];
   metafields?: Array<{
     key: string;
     value: string;
+    reference?: {
+      sources?: Array<{
+        url: string;
+        mimeType: string;
+      }>;
+    } | null;
   } | null>;
 }
 

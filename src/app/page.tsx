@@ -296,6 +296,68 @@ function LineupItem({ prefix, suffix, handle, fallbackImg, scrollTarget }: Lineu
   );
 }
 
+const MutedVideo = React.forwardRef<HTMLVideoElement, React.VideoHTMLAttributes<HTMLVideoElement>>((props, ref) => {
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.defaultMuted = true;
+      videoRef.current.muted = true;
+      if (props.src) {
+        videoRef.current.load();
+        videoRef.current.play().catch(err => {
+          console.warn('Autoplay failed:', err);
+        });
+      }
+    }
+  }, [props.src]);
+
+  React.useImperativeHandle(ref, () => videoRef.current!);
+
+  return (
+    <video
+      ref={videoRef}
+      preload="auto"
+      playsInline
+      crossOrigin="anonymous"
+      {...props}
+      muted
+    />
+  );
+});
+MutedVideo.displayName = 'MutedVideo';
+
+const MutedMotionVideo = React.forwardRef<HTMLVideoElement, any>((props, ref) => {
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.defaultMuted = true;
+      videoRef.current.muted = true;
+      if (props.src) {
+        videoRef.current.load();
+        videoRef.current.play().catch(err => {
+          console.warn('Autoplay failed:', err);
+        });
+      }
+    }
+  }, [props.src]);
+
+  React.useImperativeHandle(ref, () => videoRef.current!);
+
+  return (
+    <motion.video
+      ref={videoRef}
+      preload="auto"
+      playsInline
+      crossOrigin="anonymous"
+      {...props}
+      muted
+    />
+  );
+});
+MutedMotionVideo.displayName = 'MutedMotionVideo';
+
 function PomaHome() {
   const { addToCart } = useCart();
   const { product: heroProduct } = useShopifyProduct('pomabrush');
@@ -311,9 +373,48 @@ function PomaHome() {
         setLoadingProducts(true);
         if (env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN.startsWith('mock_')) {
           const mockData = [
-            { id: '1', title: 'Pomabrush Model 2.0', handle: 'pomabrush', productType: 'Brush' },
-            { id: '2', title: 'Pomafloss', handle: 'pomafloss', productType: 'Floss' },
-            { id: '3', title: 'Pomabru Espresso Makero', handle: 'pomabru', productType: 'Brew' },
+            { 
+              id: '1', 
+              title: 'Pomabrush Model 2.0', 
+              handle: 'pomabrush', 
+              productType: 'Brush',
+              tags: ['bestseller'],
+              images: { nodes: [{ url: '/assets/figma/hero-featured.png' }] },
+              variants: { nodes: [{ id: 'v1', price: '135.00' }] },
+              promoVideo: {
+                reference: {
+                  sources: [{ url: 'https://assets.mixkit.co/videos/preview/mixkit-holding-a-toothbrush-with-paste-41712-large.mp4', mimeType: 'video/mp4' }]
+                }
+              }
+            },
+            { 
+              id: '2', 
+              title: 'Pomafloss', 
+              handle: 'pomafloss', 
+              productType: 'Floss',
+              tags: ['bestseller'],
+              images: { nodes: [{ url: '/assets/figma/lineup-pomafloss.png' }] },
+              variants: { nodes: [{ id: 'v2', price: '39.00' }] },
+              promoVideo: {
+                reference: {
+                  sources: [{ url: 'https://assets.mixkit.co/videos/preview/mixkit-water-splashing-on-a-clean-surface-40294-large.mp4', mimeType: 'video/mp4' }]
+                }
+              }
+            },
+            { 
+              id: '3', 
+              title: 'Pomabru Espresso Makero', 
+              handle: 'pomabru', 
+              productType: 'Brew',
+              tags: ['bestseller'],
+              images: { nodes: [{ url: '/assets/figma/lineup-pomabru.png' }] },
+              variants: { nodes: [{ id: 'v3', price: '99.00' }] },
+              promoVideo: {
+                reference: {
+                  sources: [{ url: 'https://assets.mixkit.co/videos/preview/mixkit-pouring-hot-coffee-into-a-cup-41604-large.mp4', mimeType: 'video/mp4' }]
+                }
+              }
+            },
             { id: '4', title: 'pomafloss model 1.0', handle: 'pomafloss-model-1-0', productType: 'Floss' },
             { id: '5', title: 'Pomabrush Heads - Silicone', handle: 'pomaaccessoris', productType: 'Accessories' },
             { id: '6', title: 'Pomaclip', handle: 'pomaclip', productType: 'Accessories' },
@@ -332,6 +433,39 @@ function PomaHome() {
                 title
                 handle
                 productType
+                tags
+                priceRange {
+                  minVariantPrice {
+                    amount
+                  }
+                }
+                images(first: 5) {
+                  nodes {
+                    url
+                  }
+                }
+                variants(first: 10) {
+                  nodes {
+                    id
+                    title
+                    price {
+                      amount
+                    }
+                    image {
+                      url
+                    }
+                  }
+                }
+                promoVideo: metafield(namespace: "custom", key: "promo_video") {
+                  reference {
+                    ... on Video {
+                      sources {
+                        url
+                        mimeType
+                      }
+                    }
+                  }
+                }
               }
             }
           }
@@ -348,6 +482,10 @@ function PomaHome() {
         
         const json = await res.json();
         if (json.data?.products?.nodes) {
+          console.log("FETCHED PRODUCTS FOR HERO:", json.data.products.nodes.map((n: any) => ({
+            handle: n.handle,
+            videoSources: n.promoVideo?.reference?.sources
+          })));
           setAllProducts(json.data.products.nodes);
         }
       } catch (err) {
@@ -365,14 +503,6 @@ function PomaHome() {
 
   const [heroActiveIndex, setHeroActiveIndex] = useState(0);
   const [isHeroHovered, setIsHeroHovered] = useState(false);
-
-  useEffect(() => {
-    if (isHeroHovered) return;
-    const timer = setInterval(() => {
-      setHeroActiveIndex((prev) => (prev + 1) % 3);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, [isHeroHovered]);
 
   const bestSellersRef = React.useRef<HTMLDivElement>(null);
   const accessoriesRef = React.useRef<HTMLDivElement>(null);
@@ -427,46 +557,156 @@ function PomaHome() {
     });
   };
 
-  const heroCarouselProducts = [
-    {
-      handle: 'pomabrush',
-      title: heroProduct?.title || 'pomabrush model 2.0',
-      price: heroProduct?.variants.nodes[0]?.price || '135.00',
-      image: '/assets/figma/hero-featured.png',
-      handleAdd: handleAddHero
-    },
-    {
-      handle: 'pomafloss',
-      title: flossProduct?.title || 'pomafloss active dispenser',
-      price: flossProduct?.variants.nodes[0]?.price || '39.00',
-      image: '/assets/figma/lineup-pomafloss.png',
-      handleAdd: handleAddFloss
-    },
-    {
-      handle: 'pomabru',
-      title: bruProduct?.title || 'pomabru espresso traveler',
-      price: bruProduct?.variants.nodes[0]?.price || '99.00',
-      image: '/assets/figma/lineup-pomabru.png',
-      handleAdd: handleAddBru
-    }
-  ];
+  const handleAddToCart = (p: any) => {
+    if (!p) return;
+    const variant = p.variants?.nodes?.[0];
+    const price = variant?.price?.amount || variant?.price || p.priceRange?.minVariantPrice?.amount || '0.00';
+    const image = variant?.image?.url || p.images?.nodes?.[0]?.url || '/assets/figma/hero-featured.png';
+    addToCart({
+      variantId: variant?.id || p.id,
+      productId: p.id,
+      title: p.title,
+      price,
+      imageUrl: image,
+      handle: p.handle,
+    });
+  };
+
+  const targetHandles = ['pomafloss', 'pomabrush', 'pomabru'];
+  const bestsellerProducts = targetHandles
+    .map(handle => allProducts.find(p => p.handle === handle))
+    .filter(Boolean);
+
+  const heroCarouselProducts = bestsellerProducts.length === targetHandles.length
+    ? bestsellerProducts.map(p => {
+        const variant = p.variants?.nodes?.[0];
+        const price = variant?.price?.amount || variant?.price || p.priceRange?.minVariantPrice?.amount || '0.00';
+        const image = variant?.image?.url || p.images?.nodes?.[0]?.url || '/assets/figma/hero-featured.png';
+        const video = p.promoVideo?.reference?.sources?.find((s: any) => 
+          s.mimeType === 'video/mp4' || 
+          s.mimeType === 'video/webm' || 
+          s.url.includes('.mp4') || 
+          s.url.includes('.webm')
+        )?.url 
+        || p.promoVideo?.reference?.sources?.[0]?.url 
+        || null;
+
+        return {
+          handle: p.handle,
+          title: p.title,
+          price: price,
+          image: image,
+          video: video,
+          handleAdd: () => handleAddToCart(p)
+        };
+      })
+    : [
+        {
+          handle: 'pomabrush',
+          title: heroProduct?.title || 'pomabrush model 2.0',
+          price: heroProduct?.variants?.nodes?.[0]?.price || '135.00',
+          image: heroProduct?.images?.nodes?.[0]?.url || '/assets/figma/hero-featured.png',
+          video: heroProduct?.metafields?.find(m => m?.key === 'promo_video')?.reference?.sources?.find((s: any) => 
+            s.mimeType === 'video/mp4' || 
+            s.mimeType === 'video/webm' || 
+            s.url.includes('.mp4') || 
+            s.url.includes('.webm')
+          )?.url
+          || heroProduct?.metafields?.find(m => m?.key === 'promo_video')?.reference?.sources?.[0]?.url
+          || null,
+          handleAdd: handleAddHero
+        },
+        {
+          handle: 'pomafloss',
+          title: flossProduct?.title || 'pomafloss active dispenser',
+          price: flossProduct?.variants?.nodes?.[0]?.price || '39.00',
+          image: flossProduct?.images?.nodes?.[0]?.url || '/assets/figma/lineup-pomafloss.png',
+          video: flossProduct?.metafields?.find(m => m?.key === 'promo_video')?.reference?.sources?.find((s: any) => 
+            s.mimeType === 'video/mp4' || 
+            s.mimeType === 'video/webm' || 
+            s.url.includes('.mp4') || 
+            s.url.includes('.webm')
+          )?.url
+          || flossProduct?.metafields?.find(m => m?.key === 'promo_video')?.reference?.sources?.[0]?.url
+          || null,
+          handleAdd: handleAddFloss
+        },
+        {
+          handle: 'pomabru',
+          title: bruProduct?.title || 'pomabru espresso traveler',
+          price: bruProduct?.variants?.nodes?.[0]?.price || '99.00',
+          image: bruProduct?.images?.nodes?.[0]?.url || '/assets/figma/lineup-pomabru.png',
+          video: bruProduct?.metafields?.find(m => m?.key === 'promo_video')?.reference?.sources?.find((s: any) => 
+            s.mimeType === 'video/mp4' || 
+            s.mimeType === 'video/webm' || 
+            s.url.includes('.mp4') || 
+            s.url.includes('.webm')
+          )?.url
+          || bruProduct?.metafields?.find(m => m?.key === 'promo_video')?.reference?.sources?.[0]?.url
+          || null,
+          handleAdd: handleAddBru
+        }
+      ];
+
+  useEffect(() => {
+    if (isHeroHovered || heroCarouselProducts.length === 0) return;
+    const timer = setInterval(() => {
+      setHeroActiveIndex((prev) => (prev + 1) % heroCarouselProducts.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [isHeroHovered, heroCarouselProducts.length]);
 
   const activeHeroProduct = heroCarouselProducts[heroActiveIndex];
+
+  const [videoOpacity, setVideoOpacity] = useState(0.6);
+
+  useEffect(() => {
+    setVideoOpacity(0);
+    const timer = setTimeout(() => {
+      setVideoOpacity(0.6);
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [activeHeroProduct?.handle]);
 
   return (
     <div className="min-h-screen bg-white text-neutral-900 font-sans selection:bg-neutral-900 selection:text-white">
       <main>
         {/* HERO SECTION / Frame 2 */}
         <section className="relative h-[720px] bg-[#111111] text-white flex flex-col justify-between overflow-hidden">
-          {/* Hero Background Image */}
+          {/* Hero Background Image or Video */}
           <div className="absolute inset-0 z-0">
-            <Image
-              src="/assets/figma/hero-bg.png"
-              alt="Smile Freely with Poma Background"
-              fill
-              className="object-cover opacity-60"
-              priority
-            />
+            <AnimatePresence mode="wait">
+              {activeHeroProduct?.video ? (
+                <MutedMotionVideo
+                  key="hero-bg-video"
+                  animate={{ opacity: videoOpacity }}
+                  transition={{ duration: 0.6 }}
+                  src={activeHeroProduct?.video}
+                  poster={activeHeroProduct?.image || undefined}
+                  autoPlay
+                  loop
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              ) : (
+                <motion.div
+                  key="default-bg"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.6 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.8 }}
+                  className="absolute inset-0"
+                >
+                  <Image
+                    src="/assets/figma/hero-bg.png"
+                    alt="Smile Freely with Poma Background"
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <div className="relative z-10 w-[calc(100%-160px)] mx-[80px] h-full py-[60px] flex flex-col justify-between flex-grow">
@@ -504,23 +744,34 @@ function PomaHome() {
                   className="w-full md:w-[411px] rounded-3xl bg-[#111111]/45 backdrop-blur-lg border border-white/10 p-6 flex flex-col gap-6 group/hero-card hover:ring-[1px] hover:ring-white/60 transition-all duration-300"
                 >
                   <div className="flex items-center gap-6">
-                    {/* Thumbnail (image fills container) */}
+                    {/* Thumbnail (image/video fills container) */}
                     <div className="relative w-[103px] h-[103px] rounded-2xl bg-white flex items-center justify-center overflow-hidden flex-shrink-0">
-                      <Image
-                        src={activeHeroProduct.image}
-                        alt={activeHeroProduct.title}
-                        fill
-                        className="object-cover"
-                      />
+                      {activeHeroProduct?.video ? (
+                        <MutedVideo
+                          src={activeHeroProduct?.video || ''}
+                          poster={activeHeroProduct?.image || undefined}
+                          autoPlay
+                          loop
+                          playsInline
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Image
+                          src={activeHeroProduct?.image || '/assets/figma/hero-featured.png'}
+                          alt={activeHeroProduct?.title || ''}
+                          fill
+                          className="object-cover"
+                        />
+                      )}
                     </div>
                     {/* Title and price */}
                     <div className="flex flex-col justify-center flex-grow">
-                      <h4 className="text-lg font-semibold text-white lowercase">{activeHeroProduct.title}</h4>
+                      <h4 className="text-lg font-semibold text-white lowercase">{activeHeroProduct?.title}</h4>
                       <div className="flex items-center justify-between mt-2 gap-[12px]">
-                        <span className="text-2xl font-bold text-white">£{parseFloat(activeHeroProduct.price).toFixed(2)}</span>
+                        <span className="text-2xl font-bold text-white">£{parseFloat(activeHeroProduct?.price || '0').toFixed(2)}</span>
                         {/* Black morphing add to bag button */}
                         <button
-                          onClick={activeHeroProduct.handleAdd}
+                          onClick={activeHeroProduct?.handleAdd}
                           className="h-14 w-14 group-hover/hero-card:w-[110px] transition-all duration-300 rounded-full bg-neutral-900 text-white hover:bg-neutral-800 border border-white/10 cursor-pointer flex items-center justify-start gap-2 px-4 overflow-hidden flex-shrink-0 font-sans"
                         >
                           <ShoppingBag className="h-6 w-6 flex-shrink-0" />
@@ -535,7 +786,7 @@ function PomaHome() {
 
                 {/* Vertically centered Dots on the right side of the card */}
                 <div className="flex flex-col gap-3 justify-center">
-                  {[0, 1, 2].map((idx) => (
+                  {heroCarouselProducts.map((_, idx) => (
                     <button
                       key={idx}
                       onClick={() => setHeroActiveIndex(idx)}
