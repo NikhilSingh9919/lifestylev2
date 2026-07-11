@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { Rethink_Sans } from "next/font/google";
 import "./globals.css";
+import { CartProvider } from "@/context/CartContext";
+import { AuthProvider } from "@/context/AuthContext";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import CartDrawer from "@/components/CartDrawer";
+import DiagnosticConsole from "@/components/DiagnosticConsole";
 
 const rethinkSans = Rethink_Sans({
   variable: "--font-rethink-sans",
@@ -23,7 +29,17 @@ export default function RootLayout({
       lang="en"
       className={`${rethinkSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-white text-neutral-900">
+        <AuthProvider>
+          <CartProvider>
+            <Navbar />
+            <main className="flex-grow">{children}</main>
+            <Footer />
+            <CartDrawer />
+            <DiagnosticConsole />
+          </CartProvider>
+        </AuthProvider>
+      </body>
     </html>
   );
 }

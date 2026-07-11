@@ -4,10 +4,12 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, User } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import Image from 'next/image';
 
 export default function Navbar() {
   const { setIsOpen, cartCount } = useCart();
+  const { customer } = useAuth();
 
   return (
     <div className="w-full flex flex-col z-40 sticky top-0">
@@ -84,10 +86,13 @@ export default function Navbar() {
           {/* Action Controls */}
           <div className="flex items-center gap-4">
             {/* Account Pill */}
-            <button className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-[#111111] hover:bg-neutral-200 transition-colors duration-300 text-sm font-semibold cursor-pointer font-sans">
+            <a
+              href={customer ? '/account' : '/login'}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-[#111111] hover:bg-neutral-200 transition-colors duration-300 text-sm font-semibold cursor-pointer font-sans"
+            >
               <User className="h-4 w-4 stroke-[2.5]" />
-              Account
-            </button>
+              {customer ? `Hi, ${customer.firstName}` : 'Account'}
+            </a>
 
             {/* Cart Pill */}
             <button

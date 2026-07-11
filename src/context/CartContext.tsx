@@ -17,7 +17,7 @@ interface CartContextType {
   cart: CartItem[];
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  addToCart: (item: Omit<CartItem, 'quantity'>) => void;
+  addToCart: (item: Omit<CartItem, 'quantity'>, quantityToAdd?: number) => void;
   removeFromCart: (variantId: string) => void;
   updateQuantity: (variantId: string, quantity: number) => void;
   clearCart: () => void;
@@ -50,15 +50,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('poma_cart', JSON.stringify(newCart));
   };
 
-  const addToCart = (item: Omit<CartItem, 'quantity'>) => {
+  const addToCart = (item: Omit<CartItem, 'quantity'>, quantityToAdd = 1) => {
     const existing = cart.find((i) => i.variantId === item.variantId);
     if (existing) {
       const updated = cart.map((i) =>
-        i.variantId === item.variantId ? { ...i, quantity: i.quantity + 1 } : i
+        i.variantId === item.variantId ? { ...i, quantity: i.quantity + quantityToAdd } : i
       );
       saveCart(updated);
     } else {
-      saveCart([...cart, { ...item, quantity: 1 }]);
+      saveCart([...cart, { ...item, quantity: quantityToAdd }]);
     }
     setIsOpen(true);
   };

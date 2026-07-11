@@ -87,9 +87,9 @@ export default function CartDrawer() {
                       <div className="flex justify-between text-sm">
                         <div>
                           <h3 className="font-medium text-neutral-100">{item.title}</h3>
-                          <p className="mt-1 text-xs text-neutral-400 font-light">Price: ${item.price}</p>
+                          <p className="mt-1 text-xs text-neutral-400 font-light">Price: £{item.price}</p>
                         </div>
-                        <p className="font-semibold text-indigo-400">${(parseFloat(item.price) * item.quantity).toFixed(2)}</p>
+                        <p className="font-semibold text-indigo-400">£{(parseFloat(item.price) * item.quantity).toFixed(2)}</p>
                       </div>
 
                       <div className="flex items-center justify-between mt-2">
@@ -130,7 +130,7 @@ export default function CartDrawer() {
               <div className="border-t border-white/10 bg-neutral-900/50 px-6 py-6 space-y-4">
                 <div className="flex justify-between text-base font-semibold">
                   <span className="text-neutral-300">SUBTOTAL</span>
-                  <span className="text-white">${cartSubtotal.toFixed(2)}</span>
+                  <span className="text-white">£{cartSubtotal.toFixed(2)}</span>
                 </div>
                 <p className="text-xs text-neutral-400 font-light">
                   Shipping, taxes, and discounts calculated securely at payment checkout.
