@@ -6,7 +6,7 @@ import Image from 'next/image';
 export default function Footer() {
   return (
     <footer className="bg-[#111111] text-white pt-20 pb-10 border-t border-white/5 relative font-sans w-full">
-      <div className="mx-[80px] flex flex-col gap-16 font-sans">
+      <div className="px-5 md:px-[80px] flex flex-col gap-16 font-sans">
         {/* Top Footer Row */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <Image
@@ -14,7 +14,7 @@ export default function Footer() {
             alt="Poma Logo"
             width={145}
             height={40}
-            className="h-10 w-auto opacity-80"
+            className="h-[20px] md:h-10 w-auto opacity-80"
           />
           {/* Social Buttons */}
           <div className="flex gap-4">

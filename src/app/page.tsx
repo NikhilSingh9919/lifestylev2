@@ -161,16 +161,16 @@ function ProductCard({ handle, imageOverride, titleOverride, descriptionOverride
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
       onClick={() => router.push(`/products/${handle}`)}
-      className="flex flex-col justify-between rounded-[8px] bg-neutral-50 p-6 border border-neutral-200/60 transition-all duration-300 h-full group cursor-pointer"
+      className="flex flex-col justify-between rounded-[8px] bg-neutral-50 p-4 md:p-6 border border-neutral-200/60 transition-all duration-300 h-full group cursor-pointer"
     >
       <div>
         {/* White Image Container (1:1 aspect-square, covers card, rounded-8px) */}
-        <div className="relative aspect-square w-full rounded-[8px] bg-white flex items-center justify-center overflow-hidden mb-[20px] border border-neutral-100/50">
+        <div className="relative aspect-square w-full rounded-[8px] bg-white flex items-center justify-center overflow-hidden mb-4 border border-neutral-100/50">
           <Image
             src={imageUrl}
             alt={title}
@@ -225,7 +225,7 @@ function ProductCard({ handle, imageOverride, titleOverride, descriptionOverride
         )}
       </div>
 
-      <div className="flex items-center justify-between pt-[32px] h-16 w-full gap-[12px]">
+      <div className="flex items-center justify-between pt-4 h-16 w-full gap-[12px] mt-auto">
         <span className="text-[24px] font-bold text-neutral-900 flex-shrink-0">
           £{parseFloat(price).toFixed(2)}
         </span>
@@ -405,8 +405,12 @@ function PomaHome() {
 
   const scroll = (ref: React.RefObject<HTMLDivElement | null>, direction: 'left' | 'right') => {
     if (ref.current) {
-      const { scrollLeft, clientWidth } = ref.current;
-      const scrollAmount = clientWidth / 2;
+      const { scrollLeft } = ref.current;
+      const card = ref.current.firstElementChild as HTMLElement;
+      const cardWidth = card ? card.offsetWidth : 280;
+      const gap = window.innerWidth < 768 ? 24 : 32;
+      const scrollAmount = cardWidth + gap;
+      
       ref.current.scrollTo({
         left: direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
         behavior: 'smooth'
@@ -497,28 +501,28 @@ function PomaHome() {
             />
           </div>
 
-          <div className="relative z-10 w-[calc(100%-160px)] mx-[80px] h-full py-[60px] flex flex-col justify-between flex-grow">
+          <div className="relative z-10 w-full px-5 md:px-[80px] h-full py-[60px] flex flex-col justify-between flex-grow">
             {/* Top row spacing spacer */}
             <div className="flex-grow" />
 
             {/* Bottom Row */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mt-auto w-full">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mt-auto w-full">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="max-w-2xl flex flex-col text-white lowercase"
               >
-                <h1 className="text-[36px] md:text-[48px] font-extrabold leading-[1.2] tracking-tight font-sans md:whitespace-nowrap">
+                <h1 className="text-[40px] md:text-[48px] font-extrabold leading-[1.2] tracking-tight font-sans md:whitespace-nowrap">
                   smile freely with
                 </h1>
-                <span className="text-[36px] md:text-[48px] font-extrabold leading-[1.2] tracking-tight font-sans md:whitespace-nowrap">
+                <span className="text-[40px] md:text-[48px] font-extrabold leading-[1.2] tracking-tight font-sans md:whitespace-nowrap">
                   poma lifestyle
                 </span>
               </motion.div>
 
               {/* Featured Product Overlay Wrapper containing Card and Dots */}
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
                 {/* Featured Product Overlay Card / Frame 41 */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -526,7 +530,7 @@ function PomaHome() {
                   transition={{ duration: 0.8, delay: 0.4 }}
                   onMouseEnter={() => setIsHeroHovered(true)}
                   onMouseLeave={() => setIsHeroHovered(false)}
-                  className="w-full md:w-[411px] rounded-3xl bg-[#111111]/45 backdrop-blur-lg border border-white/10 p-6 flex flex-col gap-6 group/hero-card hover:ring-[1px] hover:ring-white/60 transition-all duration-300"
+                  className="w-full sm:w-[411px] rounded-3xl bg-[#111111]/45 backdrop-blur-lg border border-white/10 p-6 flex flex-col gap-6 group/hero-card hover:ring-[1px] hover:ring-white/60 transition-all duration-300"
                 >
                   <div className="flex items-center gap-6">
                     {/* Thumbnail (image fills container) */}
@@ -558,8 +562,8 @@ function PomaHome() {
                   </div>
                 </motion.div>
 
-                {/* Vertically centered Dots on the right side of the card */}
-                <div className="flex flex-col gap-3 justify-center">
+                {/* Dots */}
+                <div className="flex sm:flex-col gap-3 justify-center py-2 sm:py-0">
                   {[0, 1, 2].map((idx) => (
                     <button
                       key={idx}
@@ -576,13 +580,13 @@ function PomaHome() {
         </section>
 
         {/* EXPLORE THE LINE-UP / Frame 3 */}
-        <section id="shop" className="bg-white py-20">
-          <div className="mx-[80px]">
+        <section id="shop" className="bg-white py-12 md:py-20">
+          <div className="px-5 md:px-[80px]">
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-4xl md:text-[48px] font-bold text-[#111111] mb-12"
+              className="text-3xl md:text-[48px] font-bold text-[#111111] mb-8 md:mb-12"
             >
               Explore the line-up
             </motion.h2>
@@ -609,7 +613,7 @@ function PomaHome() {
         </section>
 
         {/* SOLUTIONS BANNER / Frame 17 */}
-        <section className="relative h-[720px] text-white overflow-hidden mx-[80px] rounded-[24px] p-[40px]">
+        <section className="relative min-h-[600px] md:h-[720px] text-white overflow-hidden mx-5 md:mx-[80px] rounded-[24px] p-6 md:p-[40px] flex flex-col justify-between">
           {/* Background image & Overlay */}
           <div className="absolute inset-0 z-0">
             <Image
@@ -622,15 +626,15 @@ function PomaHome() {
           </div>
 
           {/* Centered Heading */}
-          <div className="absolute inset-0 z-10 flex items-center justify-center px-6">
-            <h2 className="text-[60px] font-extrabold leading-[1.2] max-w-4xl text-white text-center lowercase">
+          <div className="relative md:absolute md:inset-0 z-10 flex items-center justify-center py-12 md:py-0 px-6">
+            <h2 className="text-[32px] md:text-[60px] font-extrabold leading-[1.2] max-w-4xl text-white text-center lowercase">
               Conscious solutions<br />for modern living
             </h2>
           </div>
 
           {/* Bottom Right Info Card */}
-          <div className="absolute bottom-[40px] right-[40px] z-20 max-w-[373px] flex flex-col gap-6 w-full md:w-[373px]">
-            <p className="text-[20px] text-white/80 font-normal leading-[1.5]">
+          <div className="relative md:absolute md:bottom-[40px] md:right-[40px] z-20 max-w-full md:max-w-[373px] flex flex-col gap-6 w-full mt-auto md:mt-0">
+            <p className="text-base md:text-[20px] text-white/80 font-normal leading-[1.5]">
               We create products for people who value rituals. But with more intention, where it already exists.
             </p>
             <a
@@ -643,36 +647,19 @@ function PomaHome() {
         </section>
 
         {/* BEST SELLERS / Frame 18 */}
-        <section className="bg-white py-20">
-          <div className="mx-[80px]">
+        <section className="bg-white py-12 md:py-20">
+          <div className="px-5 md:px-[80px]">
             {/* Header row */}
-            <div className="flex items-center justify-between mb-12">
-              <h2 className="text-4xl md:text-[48px] font-bold text-[#111111]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 md:mb-12">
+              <h2 className="text-2xl md:text-[48px] font-bold text-[#111111] leading-tight">
                 You shouldn’t miss on these
               </h2>
-              {/* Carousel Arrows */}
-              <div className="flex gap-4">
-                <button
-                  onClick={() => scroll(bestSellersRef, 'left')}
-                  className="flex h-14 w-14 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
-                  aria-label="Previous Slide"
-                >
-                  <ChevronLeft className="h-6 w-6" />
-                </button>
-                <button
-                  onClick={() => scroll(bestSellersRef, 'right')}
-                  className="flex h-14 w-14 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
-                  aria-label="Next Slide"
-                >
-                  <ChevronRight className="h-6 w-6" />
-                </button>
-              </div>
             </div>
 
             {/* Product Cards Row (Scrollable Carousel, dynamic width) */}
             <div
               ref={bestSellersRef}
-              className="flex overflow-x-auto no-scrollbar scroll-smooth gap-8 w-full pb-4"
+              className="flex overflow-x-auto no-scrollbar scroll-smooth gap-6 md:gap-8 w-full pb-4"
             >
               {loadingProducts ? (
                 Array.from({ length: 4 }).map((_, idx) => (
@@ -686,29 +673,47 @@ function PomaHome() {
                 ))
               )}
             </div>
+
+            {/* Slider Arrows below cards */}
+            <div className="flex justify-center gap-4 mt-8">
+              <button
+                onClick={() => scroll(bestSellersRef, 'left')}
+                className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
+                aria-label="Previous Slide"
+              >
+                <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
+              </button>
+              <button
+                onClick={() => scroll(bestSellersRef, 'right')}
+                className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
+                aria-label="Next Slide"
+              >
+                <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
+              </button>
+            </div>
           </div>
         </section>
 
         {/* FEATURED PROMO / Frame 21 */}
-        <section className="bg-white py-12">
-          <div className="mx-[80px] rounded-[24px] bg-black text-white h-[560px] overflow-hidden relative p-[40px]">
+        <section className="bg-white py-6 md:py-12">
+          <div className="mx-5 md:mx-[80px] rounded-[24px] bg-black text-white min-h-[500px] md:h-[560px] overflow-hidden relative p-6 md:p-[40px] flex flex-col justify-center">
             {/* Promo Background Image & Overlay */}
             <div className="absolute inset-0 z-0">
               <Image
                 src="/assets/figma/skipcafe-bg.png"
                 alt="Skip the Cafe Background"
                 fill
-                className="object-cover"
+                className="object-cover object-[80%_center]"
               />
               <div className="absolute inset-0 bg-[#111111]/30" />
             </div>
 
             {/* Content Left (Vertically centered "middle", left aligned) */}
-            <div className="relative z-10 h-full flex flex-col justify-center text-left max-w-[485px]">
-              <h2 className="text-[60px] font-extrabold leading-[1.2] text-white lowercase mb-[20px]">
+            <div className="relative z-10 flex flex-col justify-center text-left max-w-[485px] w-full">
+              <h2 className="text-[36px] md:text-[60px] font-extrabold leading-[1.2] text-white lowercase mb-[20px]">
                 skip the café
               </h2>
-              <p className="text-[20px] text-white/80 font-normal leading-[1.5] mb-6">
+              <p className="text-base md:text-[20px] text-white/80 font-normal leading-[1.5] mb-6">
                 From early flights to quiet mountain mornings, it reimagines the ritual of espresso for modern travel-combining convenience, precision, and the pleasure of a perfect cup.
               </p>
               <button
@@ -722,36 +727,19 @@ function PomaHome() {
         </section>
 
         {/* ACCESSORIES / Frame 23 */}
-        <section id="accessories" className="bg-white py-20 scroll-mt-20">
-          <div className="mx-[80px]">
+        <section id="accessories" className="bg-white py-12 md:py-20 scroll-mt-20">
+          <div className="px-5 md:px-[80px]">
             {/* Header row */}
-            <div className="flex items-center justify-between mb-12">
-              <h2 className="text-4xl md:text-[48px] font-bold text-[#111111]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 md:mb-12">
+              <h2 className="text-2xl md:text-[48px] font-bold text-[#111111] leading-tight">
                 Don’t forget your accessories
               </h2>
-              {/* Carousel Arrows */}
-              <div className="flex gap-4">
-                <button
-                  onClick={() => scroll(accessoriesRef, 'left')}
-                  className="flex h-14 w-14 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
-                  aria-label="Previous Slide"
-                >
-                  <ChevronLeft className="h-6 w-6" />
-                </button>
-                <button
-                  onClick={() => scroll(accessoriesRef, 'right')}
-                  className="flex h-14 w-14 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
-                  aria-label="Next Slide"
-                >
-                  <ChevronRight className="h-6 w-6" />
-                </button>
-              </div>
             </div>
 
             {/* Product Cards Row (Scrollable Carousel, restored fixed width) */}
             <div
               ref={accessoriesRef}
-              className="flex overflow-x-auto no-scrollbar scroll-smooth gap-8 w-full pb-4"
+              className="flex overflow-x-auto no-scrollbar scroll-smooth gap-6 md:gap-8 w-full pb-4"
             >
               {loadingProducts ? (
                 Array.from({ length: 4 }).map((_, idx) => (
@@ -779,6 +767,24 @@ function PomaHome() {
                   );
                 })
               )}
+            </div>
+
+            {/* Slider Arrows below cards */}
+            <div className="flex justify-center gap-4 mt-8">
+              <button
+                onClick={() => scroll(accessoriesRef, 'left')}
+                className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
+                aria-label="Previous Slide"
+              >
+                <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
+              </button>
+              <button
+                onClick={() => scroll(accessoriesRef, 'right')}
+                className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
+                aria-label="Next Slide"
+              >
+                <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
+              </button>
             </div>
           </div>
         </section>

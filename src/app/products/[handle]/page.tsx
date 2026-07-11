@@ -480,13 +480,13 @@ export default function ProductDetailPage() {
 
   return (
     <div className="min-h-screen bg-white text-neutral-900 font-sans selection:bg-neutral-900 selection:text-white pt-12 pb-20">
-      <div className="mx-[80px]">
+      <div className="px-5 md:px-[80px]">
         {/* Core Product Presentation Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
           
-          {/* LEFT SIDE: Media Gallery Column with Vertical Thumbnails (6 cols, sticky on scroll) */}
+          {/* LEFT SIDE: Media Gallery Column with Vertical/Horizontal Thumbnails (6 cols, sticky on scroll) */}
           <div className="lg:col-span-6 lg:sticky lg:top-[168px] self-start flex flex-col gap-6">
-            <div className="relative w-full pr-24">
+            <div className="relative w-full lg:pr-24">
               {/* Main Large Image Box */}
               <div className="relative aspect-square rounded-3xl bg-[#FAFAFA] border border-neutral-100/50 flex items-center justify-center overflow-hidden w-full">
                 <Image
@@ -499,14 +499,38 @@ export default function ProductDetailPage() {
                 />
               </div>
 
-              {/* Vertical Thumbnail Navigation Column (Right of Main Image) */}
+              {/* Vertical Thumbnail Navigation Column (Right of Main Image - Desktop Only) */}
               {productImages.length > 1 && (
-                <div className="absolute top-0 bottom-0 -right-1.5 w-[92px] px-1.5 py-1.5 flex flex-col gap-3 overflow-y-auto no-scrollbar">
+                <div className="hidden lg:flex absolute top-0 bottom-0 -right-1.5 w-[92px] px-1.5 py-1.5 flex-col gap-3 overflow-y-auto no-scrollbar">
                   {productImages.map((img, idx) => (
                     <button
                       key={idx}
                       onClick={() => setActiveImageIndex(idx)}
                       className={`relative w-20 h-20 rounded-xl bg-neutral-50 border overflow-hidden flex-shrink-0 cursor-pointer transition-all duration-300 ${
+                        activeImageIndex === idx 
+                          ? 'border-neutral-950 ring-2 ring-neutral-950 ring-offset-2' 
+                          : 'border-neutral-200 hover:border-neutral-400'
+                      }`}
+                    >
+                      <Image
+                        src={img}
+                        alt={`${product.title} view ${idx}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Horizontal Thumbnail Navigation (Mobile Only) */}
+              {productImages.length > 1 && (
+                <div className="flex lg:hidden gap-3 overflow-x-auto no-scrollbar py-2 mt-4">
+                  {productImages.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveImageIndex(idx)}
+                      className={`relative w-16 h-16 rounded-xl bg-neutral-50 border overflow-hidden flex-shrink-0 cursor-pointer transition-all duration-300 ${
                         activeImageIndex === idx 
                           ? 'border-neutral-950 ring-2 ring-neutral-950 ring-offset-2' 
                           : 'border-neutral-200 hover:border-neutral-400'
@@ -673,9 +697,9 @@ export default function ProductDetailPage() {
 
       {/* Dynamic bottom details grid section */}
       {insideTheBoxItems.length > 0 && product?.handle !== 'pomafloss' && (
-        <section className="bg-[#f5f5f5] py-20 mt-20">
-          <div className="mx-[80px]">
-            <h2 className="text-3xl font-black text-neutral-950 mb-10 lowercase tracking-tight">
+        <section className="bg-[#f5f5f5] py-12 md:py-20 mt-12 md:mt-20">
+          <div className="px-5 md:px-[80px]">
+            <h2 className="text-2xl md:text-3xl font-black text-neutral-950 mb-8 md:mb-10 lowercase tracking-tight">
               what&apos;s inside the box
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -698,10 +722,10 @@ export default function ProductDetailPage() {
         </section>
       )}
 
-      <div className="mx-[80px]">
+      <div className="px-5 md:px-[80px]">
         {compatibleItems.length > 0 && product?.handle !== 'pomafloss' && (
-          <section className="mt-20 pt-16 border-t border-neutral-100">
-            <h2 className="text-3xl font-black text-neutral-950 mb-10 lowercase tracking-tight">
+          <section className="mt-12 md:mt-20 pt-12 md:pt-16 border-t border-neutral-100">
+            <h2 className="text-2xl md:text-3xl font-black text-neutral-950 mb-8 md:mb-10 lowercase tracking-tight">
               compatible with
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
