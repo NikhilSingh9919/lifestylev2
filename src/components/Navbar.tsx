@@ -54,7 +54,7 @@ export default function Navbar() {
           {/* Brand Logo */}
           <a href="/" className="flex items-center cursor-pointer">
             <Image
-              src="/assets/branding/logo.svg"
+              src="/logo.svg"
               alt="Poma Lifestyle Logo"
               width={145}
               height={40}

@@ -305,6 +305,32 @@ function PomaHome() {
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
 
+  const bgVideoRef = React.useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (bgVideoRef.current) {
+      bgVideoRef.current.defaultMuted = true;
+      bgVideoRef.current.muted = true;
+      bgVideoRef.current.play().catch(() => {});
+    }
+
+    const handleFirstInteraction = () => {
+      if (bgVideoRef.current) {
+        bgVideoRef.current.play().catch(() => {});
+      }
+      window.removeEventListener('click', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+    };
+
+    window.addEventListener('click', handleFirstInteraction);
+    window.addEventListener('keydown', handleFirstInteraction);
+
+    return () => {
+      window.removeEventListener('click', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+    };
+  }, []);
+
   useEffect(() => {
     async function fetchAllProducts() {
       try {
@@ -458,38 +484,37 @@ function PomaHome() {
       <main>
         {/* HERO SECTION / Frame 2 */}
         <section className="relative h-[720px] bg-[#111111] text-white flex flex-col justify-between overflow-hidden">
-          {/* Hero Background Image */}
+          {/* Hero Background Video */}
           <div className="absolute inset-0 z-0">
-            <Image
-              src="/assets/figma/hero-bg.png"
-              alt="Smile Freely with Poma Background"
-              fill
-              className="object-cover opacity-60"
-              priority
+            <video
+              ref={bgVideoRef}
+              src="/video.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover opacity-60"
             />
           </div>
 
           <div className="relative z-10 w-[calc(100%-160px)] mx-[80px] h-full py-[60px] flex flex-col justify-between flex-grow">
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-[100px] font-extrabold leading-none text-white mt-[20px]"
-            >
-              Smile freely with poma
-            </motion.h1>
+            {/* Top row spacing spacer */}
+            <div className="flex-grow" />
 
             {/* Bottom Row */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mt-auto">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mt-auto w-full">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="max-w-xl"
+                className="max-w-2xl flex flex-col text-white lowercase"
               >
-                <p className="text-2xl md:text-[40px] font-medium text-white leading-tight lowercase">
-                  beautiful oral care designed for brighter, healthier smiles.
-                </p>
+                <h1 className="text-[36px] md:text-[48px] font-extrabold leading-[1.2] tracking-tight font-sans md:whitespace-nowrap">
+                  smile freely with
+                </h1>
+                <span className="text-[36px] md:text-[48px] font-extrabold leading-[1.2] tracking-tight font-sans md:whitespace-nowrap">
+                  poma lifestyle
+                </span>
               </motion.div>
 
               {/* Featured Product Overlay Wrapper containing Card and Dots */}

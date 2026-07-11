@@ -10,7 +10,7 @@ export default function Footer() {
         {/* Top Footer Row */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <Image
-            src="/assets/branding/logo.svg"
+            src="/logo.svg"
             alt="Poma Logo"
             width={145}
             height={40}
@@ -68,7 +68,7 @@ export default function Footer() {
         {/* Large Brand Wordmark Graphic */}
         <div className="relative w-full h-[120px] md:h-[169px] mt-8 flex justify-center items-center pointer-events-none opacity-20 select-none">
           <Image
-            src="/assets/branding/logo.svg"
+            src="/logo.svg"
             alt="POMA"
             fill
             className="object-contain"
