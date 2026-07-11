@@ -50,13 +50,13 @@ export function useShopifyProduct(handle: string) {
                   amount
                 }
               }
-              images(first: 1) {
+              images(first: 10) {
                 nodes {
                   url
                   altText
                 }
               }
-              variants(first: 1) {
+              variants(first: 100) {
                 nodes {
                   id
                   title
@@ -66,7 +66,28 @@ export function useShopifyProduct(handle: string) {
                   sku
                   availableForSale
                   quantityAvailable
+                  selectedOptions {
+                    name
+                    value
+                  }
+                  image {
+                    url
+                    altText
+                  }
                 }
+              }
+              metafields(identifiers: [
+                {namespace: "custom", key: "key_features"},
+                {namespace: "custom", key: "additional_information"},
+                {namespace: "custom", key: "poma_policies"},
+                {namespace: "custom", key: "inside_the_box"},
+                {namespace: "custom", key: "compatible_with"},
+                {namespace: "custom", key: "shipping"},
+                {namespace: "custom", key: "product_description"},
+                {namespace: "custom", key: "warranty"}
+              ]) {
+                key
+                value
               }
             }
           }
@@ -111,8 +132,11 @@ export function useShopifyProduct(handle: string) {
                 sku: v.sku || 'MOCK-SKU',
                 availableForSale: v.availableForSale,
                 quantityAvailable: v.quantityAvailable ?? 10,
+                selectedOptions: v.selectedOptions,
+                image: v.image,
               })),
             },
+            metafields: fetchedProduct.metafields,
           };
           setProduct(adaptedProduct);
         }
@@ -146,14 +170,21 @@ export function useShopifyProduct(handle: string) {
         ...product,
         variants: {
           ...product.variants,
-          nodes: product.variants.nodes.map((v) => ({
-            ...v,
-            quantityAvailable: inventoryQty,
-            availableForSale: inventoryQty > 0,
-          })),
+          nodes: product.variants.nodes.map((v) => {
+            const isMockMode = env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN.startsWith('mock_');
+            return {
+              ...v,
+              quantityAvailable: isMockMode ? inventoryQty : v.quantityAvailable,
+              availableForSale: isMockMode ? (inventoryQty > 0) : v.availableForSale,
+            };
+          }),
         },
       }
     : null;
 
-  return { product: activeProduct, loading, error, isOutOfStock: inventoryQty === 0 };
+  const isOutOfStock = activeProduct
+    ? activeProduct.variants.nodes.every((v) => !v.availableForSale)
+    : false;
+
+  return { product: activeProduct, loading, error, isOutOfStock };
 }

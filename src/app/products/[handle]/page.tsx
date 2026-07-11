@@ -63,6 +63,13 @@ const COLOR_MAP: Record<string, string> = {
   'cotton white': 'bg-white border-neutral-200 ring-neutral-400',
   'satin gold': 'bg-[#E6C15C] ring-[#C8A03C]',
   'matte silver': 'bg-[#C0C0C0] ring-[#999999]',
+  'black': 'bg-neutral-950 ring-neutral-500',
+  'white': 'bg-white border-neutral-200 ring-neutral-400',
+  'gold': 'bg-[#E6C15C] ring-[#C8A03C]',
+  'silver': 'bg-[#C0C0C0] ring-[#999999]',
+  'charcoal': 'bg-neutral-800 ring-neutral-400',
+  'green': 'bg-[#4B6B50] ring-[#374F3B]',
+  'blue': 'bg-[#2E4A62] ring-[#203344]',
 };
 
 // Accordion detailed data
@@ -163,6 +170,16 @@ const COMPATIBLE_DATA: Record<string, CompatibleItem[]> = {
   ],
 };
 
+const METAFIELD_ACCORDION_TITLES: Record<string, string> = {
+  'product_description': 'Product Details',
+  'additional_information': 'Additional Information',
+  'key_features': 'Key Features',
+  'shipping': 'Shipping & Delivery',
+  'poma_policies': 'Poma Policies',
+  'inside_the_box': "What's Inside the Box",
+  'warranty': 'Warranty',
+};
+
 export default function ProductDetailPage() {
   const { handle } = useParams();
   const router = useRouter();
@@ -173,9 +190,36 @@ export default function ProductDetailPage() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [successAdded, setSuccessAdded] = useState(false);
   const [selectedColorKey, setSelectedColorKey] = useState<string>('');
-  const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
-    'Key Features': true,
-  });
+  const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
+
+  const parseColorValue = (rawValue: string) => {
+    let name = rawValue.trim();
+    let hex: string | undefined;
+
+    // Pattern 1: Name (#Hex) or Name (Hex)
+    const parenMatch = name.match(/^([^(]+)\((#?[0-9a-fA-F]{6}|#?[0-9a-fA-F]{3})\)/);
+    if (parenMatch) {
+      name = parenMatch[1].trim();
+      hex = parenMatch[2].trim();
+    } else {
+      // Pattern 2: Name | Hex or Name - Hex
+      const separatorMatch = name.match(/^([^|-]+)[|-](#?[0-9a-fA-F]{6}|#?[0-9a-fA-F]{3})$/);
+      if (separatorMatch) {
+        name = separatorMatch[1].trim();
+        hex = separatorMatch[2].trim();
+      }
+    }
+
+    if (hex && !hex.startsWith('#') && /^[0-9a-fA-F]{3,6}$/.test(hex)) {
+      hex = `#${hex}`;
+    }
+
+    return {
+      title: name,
+      colorKey: name.toLowerCase(),
+      hexCode: hex
+    };
+  };
 
   // Helper to extract colors from variants or fallback to default product colors
   const getProductColors = () => {
@@ -183,33 +227,50 @@ export default function ProductDetailPage() {
 
     // Filter real variants with specific colors from Shopify if present
     const realColors = product.variants.nodes.filter(v => {
+      const hasColorOption = v.selectedOptions?.some(opt => 
+        opt.name.toLowerCase() === 'color' || opt.name.toLowerCase() === 'colour'
+      );
+      if (hasColorOption) return true;
+
       const titleLower = v.title.toLowerCase();
       return titleLower !== 'default title' && (
         COLOR_MAP[titleLower] !== undefined ||
         titleLower.includes('black') ||
         titleLower.includes('white') ||
         titleLower.includes('gold') ||
-        titleLower.includes('silver')
+        titleLower.includes('silver') ||
+        titleLower.includes('green') ||
+        titleLower.includes('blue')
       );
     });
 
     if (realColors.length > 0) {
-      return realColors.map(v => ({
-        id: v.id,
-        title: v.title,
-        colorKey: v.title.toLowerCase(),
-        isMock: false,
-      }));
+      return realColors.map(v => {
+        const colorOption = v.selectedOptions?.find(opt => 
+          opt.name.toLowerCase() === 'color' || opt.name.toLowerCase() === 'colour'
+        );
+        const colorName = colorOption ? colorOption.value : v.title;
+        const parsed = parseColorValue(colorName);
+        return {
+          id: v.id,
+          title: parsed.title,
+          colorKey: parsed.colorKey,
+          hexCode: parsed.hexCode,
+          isMock: false,
+        };
+      });
     }
 
     // Default color options fallback mapping
     const defaultColors = PRODUCT_DEFAULT_COLORS[product.handle] || ['Charcoal Black'];
     return defaultColors.map(colorName => {
       const variantId = product.variants.nodes[0]?.id || '';
+      const parsed = parseColorValue(colorName);
       return {
         id: variantId,
-        title: colorName,
-        colorKey: colorName.toLowerCase(),
+        title: parsed.title,
+        colorKey: parsed.colorKey,
+        hexCode: parsed.hexCode,
         isMock: true,
       };
     });
@@ -221,16 +282,62 @@ export default function ProductDetailPage() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [handle]);
-
-  // Set default selected color option when product loads
+  // Set default selected color option and sync image when product loads
   useEffect(() => {
     if (product) {
       const cols = getProductColors();
       if (cols.length > 0) {
-        setSelectedColorKey(cols[0].colorKey);
+        const defaultColorKey = cols[0].colorKey;
+        setSelectedColorKey(defaultColorKey);
+
+        const storefrontImages = product.images?.nodes?.map(img => img.url) || [];
+        const localGallery = PRODUCT_GALLERIES[product.handle];
+        const productImages = storefrontImages.length > 0 ? storefrontImages : (localGallery && localGallery.length > 0 ? localGallery : []);
+
+        const variant = product.variants.nodes.find(v => v.id === cols[0].id);
+        const variantImgUrl = variant?.image?.url;
+        if (variantImgUrl) {
+          const cleanUrl = (url: string) => url.split('?')[0];
+          const idx = productImages.findIndex(img => cleanUrl(img) === cleanUrl(variantImgUrl));
+          if (idx !== -1) {
+            setActiveImageIndex(idx);
+          }
+        }
+      }
+
+      // Automatically open "Key Features" by default if it is available
+      const dynamicAccordions = getAccordions();
+      const hasKeyFeatures = dynamicAccordions.some(acc => acc.title === 'Key Features');
+      if (hasKeyFeatures) {
+        setActiveAccordion('Key Features');
+      } else {
+        setActiveAccordion(null);
       }
     }
-  }, [product]);
+  }, [product?.id]);
+
+  // Sync gallery view when selected variant color changes
+  useEffect(() => {
+    if (product && selectedColorKey) {
+      const storefrontImages = product.images?.nodes?.map(img => img.url) || [];
+      const localGallery = PRODUCT_GALLERIES[product.handle];
+      const productImages = storefrontImages.length > 0 ? storefrontImages : (localGallery && localGallery.length > 0 ? localGallery : []);
+
+      const cols = getProductColors();
+      const activeColorOpt = cols.find(c => c.colorKey === selectedColorKey);
+      if (activeColorOpt) {
+        const variant = product.variants.nodes.find(v => v.id === activeColorOpt.id);
+        const variantImgUrl = variant?.image?.url;
+        if (variantImgUrl) {
+          const cleanUrl = (url: string) => url.split('?')[0];
+          const idx = productImages.findIndex(img => cleanUrl(img) === cleanUrl(variantImgUrl));
+          if (idx !== -1) {
+            setActiveImageIndex(idx);
+          }
+        }
+      }
+    }
+  }, [selectedColorKey, product?.id]);
 
   if (loading) {
     return (
@@ -261,10 +368,10 @@ export default function ProductDetailPage() {
     );
   }
 
-  // Resolve product images
-  const localGallery = PRODUCT_GALLERIES[product.handle];
+  // Resolve product images - prefer live Shopify images over hardcoded local galleries
   const storefrontImages = product.images?.nodes?.map(img => img.url) || [];
-  const productImages = localGallery && localGallery.length > 0 ? localGallery : (storefrontImages.length > 0 ? storefrontImages : ['/assets/products/placeholder.png']);
+  const localGallery = PRODUCT_GALLERIES[product.handle];
+  const productImages = storefrontImages.length > 0 ? storefrontImages : (localGallery && localGallery.length > 0 ? localGallery : ['/assets/products/placeholder.png']);
   const activeImageUrl = productImages[activeImageIndex] || productImages[0];
 
   // Resolve active variant and base price
@@ -299,20 +406,77 @@ export default function ProductDetailPage() {
   };
 
   const toggleAccordion = (title: string) => {
-    setOpenAccordions((prev) => ({
-      ...prev,
-      [title]: !prev[title],
-    }));
+    setActiveAccordion(prev => prev === title ? null : title);
   };
 
-  const accordions = ACCORDION_DATA[product.handle] || [
-    { title: 'Key Features', content: 'Premium engineering. High durability, lightweight materials built for modern, intentional living.' },
-    { title: 'Additional Information', content: 'Package includes product device, standard charging interface, and user instructions guide.' },
-    { title: 'Poma Policies', content: 'Enjoy free standard global delivery on orders over £50. Includes our 2-year manufacturer warranty.' }
-  ];
+  const getMetafieldValue = (key: string): string | null => {
+    if (!product?.metafields) return null;
+    const mf = product.metafields.find(m => m && m.key === key);
+    return mf ? mf.value : null;
+  };
 
-  const insideTheBoxItems = INSIDE_THE_BOX_DATA[product.handle] || [];
-  const compatibleItems = COMPATIBLE_DATA[product.handle] || [];
+  const getAccordions = () => {
+    if (!product) return [];
+
+    const list: { title: string; content: string }[] = [];
+    const keys = [
+      'product_description',
+      'additional_information',
+      'key_features',
+      'inside_the_box',
+      'warranty',
+      'shipping',
+      'poma_policies'
+    ];
+    
+    keys.forEach(key => {
+      const val = getMetafieldValue(key);
+      if (val && val.trim().length > 0) {
+        list.push({
+          title: METAFIELD_ACCORDION_TITLES[key],
+          content: val.trim()
+        });
+      }
+    });
+
+    if (list.length === 0) {
+      const localData = ACCORDION_DATA[product.handle];
+      if (localData) {
+        localData.forEach(item => {
+          list.push({
+            title: item.title,
+            content: item.content
+          });
+        });
+      } else {
+        list.push({
+          title: 'Product Details',
+          content: 'Package includes product device, standard charging interface, and user instructions guide.'
+        });
+        list.push({
+          title: 'Shipping & Delivery',
+          content: 'Enjoy free standard global delivery on orders over £50. Includes our 2-year manufacturer warranty.'
+        });
+      }
+    }
+
+    return list;
+  };
+
+  const accordions = getAccordions();
+
+  // Resolve Inside the Box items (restored to static mock data)
+  const resolveInsideTheBox = (): BoxItem[] => {
+    return INSIDE_THE_BOX_DATA[product.handle] || [];
+  };
+
+  // Resolve Compatible items (restored to static mock data)
+  const resolveCompatible = (): CompatibleItem[] => {
+    return COMPATIBLE_DATA[product.handle] || [];
+  };
+
+  const insideTheBoxItems = resolveInsideTheBox();
+  const compatibleItems = resolveCompatible();
 
   return (
     <div className="min-h-screen bg-white text-neutral-900 font-sans selection:bg-neutral-900 selection:text-white pt-12 pb-20">
@@ -320,11 +484,11 @@ export default function ProductDetailPage() {
         {/* Core Product Presentation Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
           
-          {/* LEFT SIDE: Media Gallery Column with Vertical Thumbnails (6 cols) */}
-          <div className="lg:col-span-6 flex flex-col gap-6">
-            <div className="flex gap-4 items-start w-full">
-              {/* Main Large Image Box (Flex-Grow) */}
-              <div className="flex-grow relative aspect-square rounded-3xl bg-[#FAFAFA] border border-neutral-100/50 flex items-center justify-center overflow-hidden">
+          {/* LEFT SIDE: Media Gallery Column with Vertical Thumbnails (6 cols, sticky on scroll) */}
+          <div className="lg:col-span-6 lg:sticky lg:top-[168px] self-start flex flex-col gap-6">
+            <div className="relative w-full pr-24">
+              {/* Main Large Image Box */}
+              <div className="relative aspect-square rounded-3xl bg-[#FAFAFA] border border-neutral-100/50 flex items-center justify-center overflow-hidden w-full">
                 <Image
                   src={activeImageUrl}
                   alt={product.title}
@@ -337,15 +501,15 @@ export default function ProductDetailPage() {
 
               {/* Vertical Thumbnail Navigation Column (Right of Main Image) */}
               {productImages.length > 1 && (
-                <div className="flex flex-col gap-3 flex-shrink-0 w-20">
+                <div className="absolute top-0 bottom-0 -right-1.5 w-[92px] px-1.5 py-1.5 flex flex-col gap-3 overflow-y-auto no-scrollbar">
                   {productImages.map((img, idx) => (
                     <button
                       key={idx}
                       onClick={() => setActiveImageIndex(idx)}
                       className={`relative w-20 h-20 rounded-xl bg-neutral-50 border overflow-hidden flex-shrink-0 cursor-pointer transition-all duration-300 ${
                         activeImageIndex === idx 
-                          ? 'border-neutral-950 ring-2 ring-neutral-950/10 scale-[1.03] shadow-md' 
-                          : 'border-neutral-200 hover:border-neutral-400 hover:scale-[1.01]'
+                          ? 'border-neutral-950 ring-2 ring-neutral-950 ring-offset-2' 
+                          : 'border-neutral-200 hover:border-neutral-400'
                       }`}
                     >
                       <Image
@@ -362,15 +526,15 @@ export default function ProductDetailPage() {
           </div>
 
           {/* RIGHT SIDE: Product Description & Purchase Actions (6 cols) */}
-          <div className="lg:col-span-6 flex flex-col justify-between h-full py-2">
+          <div className="lg:col-span-6 flex flex-col justify-start py-2">
             <div>
               {/* Title */}
-              <h1 className="text-3xl md:text-[42px] font-black text-neutral-950 leading-tight mb-4 lowercase tracking-tight">
-                {PRODUCT_DISPLAY_TITLES[product.handle] || product.title}
+              <h1 className="text-[32px] font-bold text-neutral-950 leading-tight mb-4 lowercase tracking-tight">
+                {product.title}
               </h1>
 
               {/* Description body */}
-              <p className="text-sm md:text-base text-neutral-500 leading-relaxed font-sans font-light mb-6">
+              <p className="text-[16px] text-neutral-500 leading-relaxed font-sans font-light mb-6">
                 {product.description}
               </p>
 
@@ -383,7 +547,7 @@ export default function ProductDetailPage() {
 
               {/* Color Swatch Options (Renders swatches by default, handles single colors beautifully) */}
               {colors.length > 0 && (
-                <div className="mb-8 border-b border-neutral-100 pb-6">
+                <div className="mb-6">
                   <h3 className="text-xs font-bold uppercase text-neutral-400 tracking-widest mb-3 font-sans">
                     Select Color
                   </h3>
@@ -391,7 +555,16 @@ export default function ProductDetailPage() {
                   <div className="flex flex-wrap gap-3">
                     {colors.map((colorOption) => {
                       const isSelected = selectedColorKey === colorOption.colorKey;
-                      const bgClass = COLOR_MAP[colorOption.colorKey] || 'bg-neutral-400';
+                      const bgClass = COLOR_MAP[colorOption.colorKey];
+                      const style = colorOption.hexCode 
+                        ? { backgroundColor: colorOption.hexCode } 
+                        : (bgClass ? {} : { backgroundColor: colorOption.colorKey });
+                      const displayBgClass = colorOption.hexCode 
+                        ? 'border-neutral-200 shadow-sm' 
+                        : (bgClass || 'border-neutral-300');
+                      const isLightColor = colorOption.colorKey === 'white' || 
+                        colorOption.colorKey === 'cotton white' || 
+                        (colorOption.hexCode && ['#ffffff', '#fff', '#fafafa', '#f0f0f0', '#e6c15c', '#c0c0c0'].includes(colorOption.hexCode.toLowerCase()));
 
                       return (
                         <button
@@ -400,13 +573,14 @@ export default function ProductDetailPage() {
                           className={`w-10 h-10 rounded-full border transition-all relative flex items-center justify-center cursor-pointer ${
                             isSelected
                               ? 'ring-2 ring-neutral-900 ring-offset-2 scale-110'
-                              : 'hover:scale-105 border-neutral-300'
-                          } ${bgClass}`}
+                              : 'hover:scale-105'
+                          } ${displayBgClass}`}
+                          style={style}
                           title={colorOption.title}
                           aria-label={colorOption.title}
                         >
                           {isSelected && (
-                            <Check className={`h-4 w-4 ${colorOption.colorKey === 'cotton white' ? 'text-neutral-900' : 'text-white'}`} />
+                            <Check className={`h-4 w-4 ${isLightColor ? 'text-neutral-900' : 'text-white'}`} />
                           )}
                         </button>
                       );
@@ -422,7 +596,7 @@ export default function ProductDetailPage() {
               {/* Buy row */}
               <div className="flex gap-4 items-center mb-8">
                 {/* Quantity Adjustment Box */}
-                <div className="flex items-center rounded-full border-2 border-neutral-900 h-14 px-2">
+                <div className="flex items-center rounded-full border-2 border-neutral-900/20 h-14 px-2">
                   <button
                     onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
                     disabled={quantity <= 1}
@@ -454,36 +628,39 @@ export default function ProductDetailPage() {
 
               {/* Collapsible Accordion details */}
               <div className="border-t border-neutral-200">
-                {accordions.map((item, idx) => (
-                  <div key={idx} className="border-b border-neutral-200 py-3">
-                    <button
-                      onClick={() => toggleAccordion(item.title)}
-                      className="w-full flex items-center justify-between text-left cursor-pointer py-1"
-                    >
-                      <span className="text-base font-bold text-neutral-900 font-sans">{item.title}</span>
-                      {openAccordions[item.title] ? (
-                        <ChevronUp className="h-5 w-5 text-neutral-500" />
-                      ) : (
-                        <ChevronDown className="h-5 w-5 text-neutral-500" />
-                      )}
-                    </button>
-                    <AnimatePresence>
-                      {openAccordions[item.title] && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="overflow-hidden"
-                        >
-                          <p className="text-sm text-neutral-500 pt-2 pb-1 font-sans leading-relaxed font-light">
-                            {item.content}
-                          </p>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                ))}
+                {accordions.map((item, idx) => {
+                  const isOpen = activeAccordion === item.title;
+                  return (
+                    <div key={idx} className="border-b border-neutral-200 py-3">
+                      <button
+                        onClick={() => toggleAccordion(item.title)}
+                        className="w-full flex items-center justify-between text-left cursor-pointer py-1"
+                      >
+                        <span className="text-[16px] font-medium text-neutral-900 font-sans">{item.title}</span>
+                        {isOpen ? (
+                          <ChevronUp className="h-5 w-5 text-neutral-500" />
+                        ) : (
+                          <ChevronDown className="h-5 w-5 text-neutral-500" />
+                        )}
+                      </button>
+                      <AnimatePresence>
+                        {isOpen && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="text-[16px] text-neutral-500 pt-2 pb-1 font-sans leading-relaxed font-light">
+                              {renderRichText(item.content)}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
               </div>
 
             </div>
@@ -492,49 +669,54 @@ export default function ProductDetailPage() {
 
         </div>
 
-        {/* Dynamic bottom details grid section */}
-        {insideTheBoxItems.length > 0 && (
-          <section className="mt-20 pt-16 border-t border-neutral-100">
+      </div>
+
+      {/* Dynamic bottom details grid section */}
+      {insideTheBoxItems.length > 0 && product?.handle !== 'pomafloss' && (
+        <section className="bg-[#f5f5f5] py-20 mt-20">
+          <div className="mx-[80px]">
             <h2 className="text-3xl font-black text-neutral-950 mb-10 lowercase tracking-tight">
               what&apos;s inside the box
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {insideTheBoxItems.map((item, idx) => (
-                <div key={idx} className="flex flex-col gap-4">
-                  <div className="relative aspect-[4/3] w-full rounded-2xl bg-neutral-50 border border-neutral-100 overflow-hidden">
+                <div key={idx} className="flex flex-col group">
+                  <div className="relative aspect-[4/3] w-full rounded-2xl bg-white border border-neutral-100 overflow-hidden mb-4">
                     <Image
                       src={item.img}
                       alt={item.title}
                       fill
-                      className="object-cover"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
-                  <h3 className="text-lg font-bold text-neutral-900 lowercase">{item.title}</h3>
-                  <p className="text-sm text-neutral-500 font-sans leading-relaxed font-light">{item.desc}</p>
+                  <h3 className="text-[16px] font-bold text-neutral-900 lowercase mb-2">{item.title}</h3>
+                  <p className="text-[16px] text-neutral-500 font-sans leading-relaxed font-light">{item.desc}</p>
                 </div>
               ))}
             </div>
-          </section>
-        )}
+          </div>
+        </section>
+      )}
 
-        {compatibleItems.length > 0 && (
+      <div className="mx-[80px]">
+        {compatibleItems.length > 0 && product?.handle !== 'pomafloss' && (
           <section className="mt-20 pt-16 border-t border-neutral-100">
             <h2 className="text-3xl font-black text-neutral-950 mb-10 lowercase tracking-tight">
               compatible with
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
               {compatibleItems.map((item, idx) => (
-                <div key={idx} className="flex flex-col gap-4">
-                  <div className="relative aspect-[4/3] w-full rounded-2xl bg-neutral-50 border border-neutral-100 overflow-hidden">
+                <div key={idx} className="flex flex-col group">
+                  <div className="relative aspect-[4/3] w-full rounded-2xl bg-neutral-50 border border-neutral-100 overflow-hidden mb-4">
                     <Image
                       src={item.img}
                       alt={item.title}
                       fill
-                      className="object-cover"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
-                  <h3 className="text-lg font-bold text-neutral-900 lowercase">{item.title}</h3>
-                  <p className="text-sm text-neutral-500 font-sans leading-relaxed font-light">{item.desc}</p>
+                  <h3 className="text-[16px] font-bold text-neutral-900 lowercase mb-2">{item.title}</h3>
+                  <p className="text-[16px] text-neutral-500 font-sans leading-relaxed font-light">{item.desc}</p>
                 </div>
               ))}
             </div>
@@ -544,4 +726,102 @@ export default function ProductDetailPage() {
       </div>
     </div>
   );
+}
+
+function renderRichText(value: string): React.ReactNode {
+  if (!value) return null;
+
+  // Check if it looks like Shopify Rich Text JSON
+  if (value.startsWith('{') && value.includes('"type"')) {
+    try {
+      const parsed = JSON.parse(value);
+      if (parsed.type === 'root' && Array.isArray(parsed.children)) {
+        return renderNodes(parsed.children);
+      }
+    } catch (e) {
+      // Fallback to raw string if parsing fails
+      return value;
+    }
+  }
+
+  // If it's a simple string with newlines, replace them with line breaks
+  return (
+    <span className="whitespace-pre-wrap">{value}</span>
+  );
+}
+
+function renderNodes(nodes: any[]): React.ReactNode[] {
+  return nodes.map((node, idx) => {
+    switch (node.type) {
+      case 'paragraph':
+        return (
+          <p key={idx} className="mb-2 last:mb-0">
+            {renderNodes(node.children)}
+          </p>
+        );
+      case 'list':
+        const Tag = node.listType === 'ordered' ? 'ol' : 'ul';
+        const listClass = node.listType === 'ordered' ? 'list-decimal pl-5 mb-2' : 'list-disc pl-5 mb-2';
+        return (
+          <Tag key={idx} className={listClass}>
+            {renderNodes(node.children)}
+          </Tag>
+        );
+      case 'list-item':
+        return (
+          <li key={idx} className="mb-1">
+            {renderNodes(node.children)}
+          </li>
+        );
+      case 'text':
+        let element = <span key={idx}>{node.value}</span>;
+        if (node.bold) {
+          element = <span key={idx} className="font-medium text-[14px] opacity-60 text-neutral-950">{element}</span>;
+        }
+        if (node.italic) {
+          element = <em key={idx}>{element}</em>;
+        }
+        return element;
+      case 'heading':
+        const HeadingTag = `h${node.level || 3}` as any;
+        return (
+          <HeadingTag key={idx} className="font-bold my-2 text-neutral-900">
+            {renderNodes(node.children)}
+          </HeadingTag>
+        );
+      default:
+        if (node.children) {
+          return <span key={idx}>{renderNodes(node.children)}</span>;
+        }
+        return null;
+    }
+  });
+}
+
+function extractTextItemsFromRichText(value: string): string[] {
+  try {
+    const parsed = JSON.parse(value);
+    if (parsed.type === 'root' && Array.isArray(parsed.children)) {
+      const items: string[] = [];
+      
+      const traverse = (node: any) => {
+        if (node.type === 'list-item' || node.type === 'paragraph') {
+          // Join all text children values
+          const text = node.children
+            ?.filter((c: any) => c.type === 'text')
+            ?.map((c: any) => c.value)
+            ?.join('') || '';
+          if (text.trim()) {
+            items.push(text.trim());
+          }
+        } else if (node.children) {
+          node.children.forEach(traverse);
+        }
+      };
+
+      parsed.children.forEach(traverse);
+      return items;
+    }
+  } catch {}
+  return [];
 }
