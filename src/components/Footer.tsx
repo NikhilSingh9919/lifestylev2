@@ -2,8 +2,14 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  if (pathname === '/login' || pathname === '/register') {
+    return null;
+  }
   return (
     <footer className="bg-[#111111] text-white pt-20 pb-10 border-t border-white/5 relative font-sans w-full">
       <div className="px-5 md:px-[80px] flex flex-col gap-16 font-sans">
@@ -52,7 +58,7 @@ export default function Footer() {
           <div className="flex flex-col gap-4">
             <h4 className="text-xl font-bold text-white font-sans mb-2">support</h4>
             <a href="#" className="text-neutral-400 hover:text-white transition-colors text-lg font-normal">contact us</a>
-            <a href="#" className="text-neutral-400 hover:text-white transition-colors text-lg font-normal">faq</a>
+            <a href="/faq" className="text-neutral-400 hover:text-white transition-colors text-lg font-normal">faq</a>
             <a href="#" className="text-neutral-400 hover:text-white transition-colors text-lg font-normal">policies</a>
             <a href="#" className="text-neutral-400 hover:text-white transition-colors text-lg font-normal">warranty</a>
           </div>

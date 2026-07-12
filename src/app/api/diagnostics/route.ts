@@ -54,15 +54,13 @@ export async function GET() {
     logs.push(`[INFO] Generated Checkout Link: "${checkoutUrl}"`);
 
     // Verify format matches Shopify domain + path structure
-    const expectedPrefix = `https://${env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_DOMAIN}/cart/`;
-    if (checkoutUrl.startsWith(expectedPrefix)) {
-      logs.push(`[SUCCESS] Link bridge checkout URL validated: matched target path.`);
-      checkoutOk = true;
-    } else if (checkoutUrl.includes(env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_DOMAIN)) {
-      logs.push(`[SUCCESS] Link bridge checkout URL validated (GraphQL Redirect): matched domain.`);
+    const isShopifyDomain = checkoutUrl.includes('.myshopify.com') || checkoutUrl.includes('.shopify.com') || checkoutUrl.includes(env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_DOMAIN);
+    const hasCartPath = checkoutUrl.includes('/cart/');
+    if (isShopifyDomain && hasCartPath) {
+      logs.push(`[SUCCESS] Link bridge checkout URL validated: matched Shopify cart/checkout pattern.`);
       checkoutOk = true;
     } else {
-      logs.push(`[ERROR] Link bridge checkout URL format mismatch: Expected domain "${env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_DOMAIN}"`);
+      logs.push(`[ERROR] Link bridge checkout URL format mismatch: Expected Shopify cart/checkout URL, got "${checkoutUrl}"`);
     }
   } catch (err: any) {
     logs.push(`[ERROR] Checkout Link Bridge handshake failed: ${err.message}`);

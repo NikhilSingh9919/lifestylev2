@@ -4,8 +4,9 @@ import React, { useState, Suspense } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, UserPlus, Mail, User, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, UserPlus, Mail, User, ArrowRight, Lock } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 function RegisterFormContent() {
   const { register, customer, loading } = useAuth();
@@ -55,35 +56,28 @@ function RegisterFormContent() {
   };
 
   return (
-    <div className="min-h-[85vh] bg-[#0A0A0A] text-white flex items-center justify-center px-4 relative overflow-hidden font-sans py-16">
-      {/* Dynamic Background Gradients */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-indigo-900/10 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[350px] h-[350px] rounded-full bg-violet-900/10 blur-[100px] pointer-events-none" />
-
+    <div className="min-h-[85vh] bg-neutral-50 text-neutral-900 flex items-center justify-center px-4 relative overflow-hidden font-sans py-16">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
         className="w-full max-w-[500px] z-10"
       >
-        {/* Glassmorphic Container */}
-        <div className="bg-[#111111]/70 backdrop-blur-xl border border-white/10 rounded-2xl p-8 sm:p-10 shadow-2xl relative">
+        {/* Simple Premium Container (Black card, 12px corners) */}
+        <div className="bg-neutral-950 border border-white/10 rounded-xl p-8 sm:p-10 shadow-2xl relative text-white">
           
-          {/* Header */}
-          <div className="text-center mb-8">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="inline-flex items-center justify-center p-3 rounded-full bg-white/5 border border-white/10 mb-4"
-            >
-              <UserPlus className="h-6 w-6 text-indigo-400" />
-            </motion.div>
-            <h2 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-neutral-100 to-neutral-400 bg-clip-text text-transparent">
-              Create Account
-            </h2>
-            <p className="text-sm text-neutral-400 mt-2 font-medium">
-              Join the Poma Lifestyle community
+          {/* Header (Centered Logo & Subtitle) */}
+          <div className="flex flex-col items-center mb-8">
+            <Image
+              src="/logo.svg"
+              alt="Poma Lifestyle Logo"
+              width={160}
+              height={44}
+              className="h-[24px] md:h-[30px] w-auto mb-3"
+              priority
+            />
+            <p className="text-sm text-neutral-400 font-medium">
+              Join the PomaLifestyle
             </p>
           </div>
 
@@ -96,7 +90,7 @@ function RegisterFormContent() {
             >
               {errors.map((err, idx) => (
                 <div key={idx} className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 flex-shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 flex-shrink-0" />
                   <span>{err}</span>
                 </div>
               ))}
@@ -119,7 +113,7 @@ function RegisterFormContent() {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="John"
-                    className="w-full bg-neutral-900/50 border border-white/10 rounded-xl py-2.5 pl-9 pr-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all duration-300 font-sans"
+                    className="w-full bg-neutral-900 border border-white/10 rounded-full py-2.5 pl-9 pr-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all duration-300 font-sans"
                     required
                   />
                 </div>
@@ -138,7 +132,7 @@ function RegisterFormContent() {
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="Doe"
-                    className="w-full bg-neutral-900/50 border border-white/10 rounded-xl py-2.5 pl-9 pr-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all duration-300 font-sans"
+                    className="w-full bg-neutral-900 border border-white/10 rounded-full py-2.5 pl-9 pr-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all duration-300 font-sans"
                     required
                   />
                 </div>
@@ -150,7 +144,7 @@ function RegisterFormContent() {
                 Email Address
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-500">
+                <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-500">
                   <Mail className="h-4.5 w-4.5" />
                 </span>
                 <input
@@ -158,7 +152,7 @@ function RegisterFormContent() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full bg-neutral-900/50 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all duration-300 font-sans"
+                  className="w-full bg-neutral-900 border border-white/10 rounded-full py-3.5 pl-11 pr-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all duration-300 font-sans"
                   required
                 />
               </div>
@@ -169,38 +163,38 @@ function RegisterFormContent() {
                 Password
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-500">
-                  <span className="h-4.5 w-4.5 block border-2 border-dashed border-neutral-500 rounded-full" />
+                <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-500">
+                  <Lock className="h-4.5 w-4.5" />
                 </span>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-neutral-900/50 border border-white/10 rounded-xl py-3 pl-11 pr-11 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all duration-300 font-sans"
+                  className="w-full bg-neutral-900 border border-white/10 rounded-full py-3.5 pl-11 pr-11 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all duration-300 font-sans"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-neutral-500 hover:text-white transition-colors duration-200"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-neutral-500 hover:text-white transition-colors duration-200"
                 >
                   {showPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
                 </button>
               </div>
-              <p className="text-[10px] text-neutral-500 mt-1.5 leading-normal">
-                Must be at least 6 characters. Your details will be synchronized securely with Shopify.
+              <p className="text-[10px] text-neutral-400 mt-1.5 leading-normal">
+                The password must be at least six characters.
               </p>
             </div>
 
-            {/* Submit Button */}
+            {/* Submit Button - Design System Style */}
             <button
               type="submit"
               disabled={isSubmitting || loading}
-              className="w-full relative flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-white text-[#111111] hover:bg-neutral-200 transition-all duration-300 font-bold text-sm select-none disabled:opacity-50 cursor-pointer group shadow-lg shadow-white/5 mt-2"
+              className="w-full relative flex items-center justify-center gap-2 py-3.5 px-4 rounded-full bg-white text-neutral-950 hover:bg-neutral-200 transition-all duration-300 font-semibold text-sm select-none disabled:opacity-50 cursor-pointer group shadow-md mt-2"
             >
               {isSubmitting || loading ? (
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-neutral-900 border-t-transparent"></div>
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-neutral-950 border-t-transparent"></div>
               ) : (
                 <>
                   Create Account
@@ -211,11 +205,11 @@ function RegisterFormContent() {
           </form>
 
           {/* Login Footer */}
-          <div className="mt-8 text-center pt-6 border-t border-white/5 text-sm text-neutral-400">
+          <div className="mt-8 text-center pt-6 border-t border-white/10 text-sm text-neutral-400">
             Already have an account?{' '}
             <Link
               href={`/login?redirect=${encodeURIComponent(redirect)}`}
-              className="text-white hover:text-indigo-400 hover:underline font-semibold transition-colors duration-200"
+              className="text-white hover:underline font-semibold transition-colors duration-200"
             >
               Sign in
             </Link>
@@ -229,8 +223,8 @@ function RegisterFormContent() {
 export default function RegisterPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-[85vh] bg-[#0A0A0A] text-white flex items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+      <div className="min-h-[85vh] bg-neutral-50 text-neutral-900 flex items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-neutral-900 border-t-transparent" />
       </div>
     }>
       <RegisterFormContent />

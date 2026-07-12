@@ -87,7 +87,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         variantId: item.variantId,
         quantity: item.quantity,
       }));
-      const checkoutUrl = await generateCheckoutLink(items);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('shopify_customer_access_token') || undefined : undefined;
+      const checkoutUrl = await generateCheckoutLink(items, token);
       window.location.href = checkoutUrl;
     } catch (error) {
       console.error('Checkout redirect failed:', error);

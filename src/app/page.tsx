@@ -297,6 +297,7 @@ function LineupItem({ prefix, suffix, handle, fallbackImg, scrollTarget }: Lineu
 }
 
 function PomaHome() {
+  const router = useRouter();
   const { addToCart } = useCart();
   const { product: heroProduct } = useShopifyProduct('pomabrush');
   const { product: bruProduct } = useShopifyProduct('pomabru');
@@ -487,12 +488,12 @@ function PomaHome() {
     <div className="min-h-screen bg-white text-neutral-900 font-sans selection:bg-neutral-900 selection:text-white">
       <main>
         {/* HERO SECTION / Frame 2 */}
-        <section className="relative h-[720px] bg-[#111111] text-white flex flex-col justify-between overflow-hidden">
+        <section className="relative h-[calc(100vh-80px)] min-h-[640px] bg-[#111111] text-white flex flex-col justify-between overflow-hidden">
           {/* Hero Background Video */}
           <div className="absolute inset-0 z-0">
             <video
               ref={bgVideoRef}
-              src="/video.mp4"
+              src="/promo.webm"
               autoPlay
               loop
               muted
@@ -513,10 +514,10 @@ function PomaHome() {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="max-w-2xl flex flex-col text-white lowercase"
               >
-                <h1 className="text-[40px] md:text-[48px] font-extrabold leading-[1.2] tracking-tight font-sans md:whitespace-nowrap">
+                <h1 className="text-[32px] md:text-[48px] font-extrabold leading-[1.2] tracking-tight font-sans md:whitespace-nowrap">
                   smile freely with
                 </h1>
-                <span className="text-[40px] md:text-[48px] font-extrabold leading-[1.2] tracking-tight font-sans md:whitespace-nowrap">
+                <span className="text-[32px] md:text-[48px] font-extrabold leading-[1.2] tracking-tight font-sans md:whitespace-nowrap">
                   poma lifestyle
                 </span>
               </motion.div>
@@ -530,7 +531,8 @@ function PomaHome() {
                   transition={{ duration: 0.8, delay: 0.4 }}
                   onMouseEnter={() => setIsHeroHovered(true)}
                   onMouseLeave={() => setIsHeroHovered(false)}
-                  className="w-full sm:w-[411px] rounded-3xl bg-[#111111]/45 backdrop-blur-lg border border-white/10 p-6 flex flex-col gap-6 group/hero-card hover:ring-[1px] hover:ring-white/60 transition-all duration-300"
+                  onClick={() => router.push(`/products/${activeHeroProduct.handle}`)}
+                  className="w-full sm:w-[411px] rounded-3xl bg-[#111111]/45 backdrop-blur-lg border border-white/10 p-6 flex flex-col gap-6 group/hero-card hover:ring-[1px] hover:ring-white/60 transition-all duration-300 cursor-pointer"
                 >
                   <div className="flex items-center gap-6">
                     {/* Thumbnail (image fills container) */}
@@ -544,12 +546,15 @@ function PomaHome() {
                     </div>
                     {/* Title and price */}
                     <div className="flex flex-col justify-center flex-grow">
-                      <h4 className="text-lg font-semibold text-white lowercase">{activeHeroProduct.title}</h4>
+                      <h4 className="text-base sm:text-lg font-semibold text-white lowercase">{activeHeroProduct.title}</h4>
                       <div className="flex items-center justify-between mt-2 gap-[12px]">
-                        <span className="text-2xl font-bold text-white">£{parseFloat(activeHeroProduct.price).toFixed(2)}</span>
+                        <span className="text-xl sm:text-2xl font-bold text-white">£{parseFloat(activeHeroProduct.price).toFixed(2)}</span>
                         {/* Black morphing add to bag button */}
                         <button
-                          onClick={activeHeroProduct.handleAdd}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            activeHeroProduct.handleAdd();
+                          }}
                           className="h-14 w-14 group-hover/hero-card:w-[110px] transition-all duration-300 rounded-full bg-neutral-900 text-white hover:bg-neutral-800 border border-white/10 cursor-pointer flex items-center justify-start gap-2 px-4 overflow-hidden flex-shrink-0 font-sans"
                         >
                           <ShoppingBag className="h-6 w-6 flex-shrink-0" />
@@ -586,7 +591,7 @@ function PomaHome() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-3xl md:text-[48px] font-bold text-[#111111] mb-8 md:mb-12"
+              className="text-[32px] md:text-[48px] font-bold text-[#111111] mb-8 md:mb-12"
             >
               Explore the line-up
             </motion.h2>
@@ -651,7 +656,7 @@ function PomaHome() {
           <div className="px-5 md:px-[80px]">
             {/* Header row */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 md:mb-12">
-              <h2 className="text-2xl md:text-[48px] font-bold text-[#111111] leading-tight">
+              <h2 className="text-[32px] md:text-[48px] font-bold text-[#111111] leading-tight">
                 You shouldn’t miss on these
               </h2>
             </div>
@@ -710,14 +715,14 @@ function PomaHome() {
 
             {/* Content Left (Vertically centered "middle", left aligned) */}
             <div className="relative z-10 flex flex-col justify-center text-left max-w-[485px] w-full">
-              <h2 className="text-[36px] md:text-[60px] font-extrabold leading-[1.2] text-white lowercase mb-[20px]">
+              <h2 className="text-[32px] md:text-[60px] font-extrabold leading-[1.2] text-white lowercase mb-[20px]">
                 skip the café
               </h2>
               <p className="text-base md:text-[20px] text-white/80 font-normal leading-[1.5] mb-6">
                 From early flights to quiet mountain mornings, it reimagines the ritual of espresso for modern travel-combining convenience, precision, and the pleasure of a perfect cup.
               </p>
               <button
-                onClick={handleAddBru}
+                onClick={() => router.push('/products/pomabru')}
                 className="inline-flex items-center justify-center px-10 py-4 rounded-full bg-white text-[#111111] text-lg font-bold hover:bg-neutral-200 transition-colors w-full cursor-pointer shadow-lg font-sans"
               >
                 Get Pomabru
@@ -731,7 +736,7 @@ function PomaHome() {
           <div className="px-5 md:px-[80px]">
             {/* Header row */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 md:mb-12">
-              <h2 className="text-2xl md:text-[48px] font-bold text-[#111111] leading-tight">
+              <h2 className="text-[32px] md:text-[48px] font-bold text-[#111111] leading-tight">
                 Don’t forget your accessories
               </h2>
             </div>

@@ -218,7 +218,8 @@ export function getMockProduct(handle: string): ShopifyProduct | null {
 }
 
 export async function generateCheckoutLink(
-  lineItems: Array<{ variantId: string; quantity: number }>
+  lineItems: Array<{ variantId: string; quantity: number }>,
+  customerAccessToken?: string
 ): Promise<string> {
   const domain = env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_DOMAIN;
   
@@ -229,24 +230,31 @@ export async function generateCheckoutLink(
 
   try {
     const query = `
-      mutation checkoutCreate($input: CheckoutCreateInput!) {
-        checkoutCreate(input: $input) {
-          checkout {
-            webUrl
+      mutation cartCreate($input: CartInput!) {
+        cartCreate(input: $input) {
+          cart {
+            checkoutUrl
           }
-          checkoutUserErrors {
+          userErrors {
+            field
             message
           }
         }
       }
     `;
 
-    const input = {
-      lineItems: lineItems.map((item) => ({
-        variantId: item.variantId,
+    const input: any = {
+      lines: lineItems.map((item) => ({
+        merchandiseId: item.variantId,
         quantity: item.quantity,
       })),
     };
+
+    if (customerAccessToken) {
+      input.buyerIdentity = {
+        customerAccessToken,
+      };
+    }
 
     const res = await fetch(`https://${domain}/api/2024-01/graphql.json`, {
       method: 'POST',
@@ -259,11 +267,19 @@ export async function generateCheckoutLink(
 
     if (!res.ok) throw new Error(`HTTP checkout error: ${res.status}`);
     const json = await res.json();
-    const webUrl = json.data?.checkoutCreate?.checkout?.webUrl;
-    if (webUrl) return webUrl;
+    
+    const errors = json.errors || [];
+    const userErrors = json.data?.cartCreate?.userErrors || [];
+    if (errors.length > 0 || userErrors.length > 0) {
+      const errMsg = [...errors.map((e: any) => e.message), ...userErrors.map((e: any) => e.message)].join(', ');
+      throw new Error(`Shopify Cart API error: ${errMsg}`);
+    }
+
+    const checkoutUrl = json.data?.cartCreate?.cart?.checkoutUrl;
+    if (checkoutUrl) return checkoutUrl;
 
     throw new Error('GraphQL checkout creation empty response');
-  } catch (err) {
+  } catch (err: any) {
     console.warn('Checkout API failed, falling back to permalink:', err);
     const cartParts = lineItems.map((item) => `${extractVariantId(item.variantId)}:${item.quantity}`).join(',');
     return `https://${domain}/cart/${cartParts}`;

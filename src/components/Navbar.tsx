@@ -16,7 +16,7 @@ export default function Navbar() {
     { label: 'Home', href: '/' },
     { label: 'Shop', href: '/#shop' },
     { label: 'About Us', href: '/#about' },
-    { label: 'FAQ', href: '/#faq' },
+    { label: 'FAQ', href: '/faq' },
   ];
 
   return (

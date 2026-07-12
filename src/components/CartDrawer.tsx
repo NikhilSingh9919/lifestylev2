@@ -89,7 +89,7 @@ export default function CartDrawer() {
                           <h3 className="font-medium text-neutral-100">{item.title}</h3>
                           <p className="mt-1 text-xs text-neutral-400 font-light">Price: £{item.price}</p>
                         </div>
-                        <p className="font-semibold text-indigo-400">£{(parseFloat(item.price) * item.quantity).toFixed(2)}</p>
+                        <p className="font-semibold text-white">£{(parseFloat(item.price) * item.quantity).toFixed(2)}</p>
                       </div>
 
                       <div className="flex items-center justify-between mt-2">
@@ -140,16 +140,16 @@ export default function CartDrawer() {
                 <button
                   disabled={isCheckingOut}
                   onClick={checkout}
-                  className="relative flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3.5 text-sm font-semibold text-white shadow-xl shadow-indigo-600/30 hover:opacity-90 disabled:opacity-50 transition-all duration-300 cursor-pointer font-sans"
+                  className="relative flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-black hover:bg-neutral-200 disabled:opacity-50 transition-all duration-300 cursor-pointer font-sans"
                 >
                   {isCheckingOut ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin text-neutral-600" />
                       Redirecting to secure checkout...
                     </>
                   ) : (
                     <>
-                      <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                      <ShieldCheck className="h-4 w-4 text-emerald-600" />
                       Secure checkout on shopify
                     </>
                   )}

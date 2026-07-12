@@ -127,10 +127,10 @@ interface BoxItem {
 
 const INSIDE_THE_BOX_DATA: Record<string, BoxItem[]> = {
   'pomabru': [
-    { title: 'pomabru', desc: 'Designed for those who refuse to compromise on quality, pomabru brings the café experience to wherever you are.', img: '/assets/figma/lineup-pomabru.png' },
-    { title: 'Scoop', desc: 'A handy scoop that perfectly measures the ideal amount of ground coffee for one delicious espresso, ensuring consistency and flavour in every cup.', img: '/assets/figma/accessory-1.png' },
-    { title: 'water-resistant carry case', desc: 'The protective case keeps your pomabru safe and ready for adventure.', img: '/assets/figma/lineup-pomaaccessories.png' },
-    { title: 'usb-c fast charging cable', desc: 'Universal, reliable and quick to recharge your pomabru. You can even use your pomabru as a source to charge a different device.', img: '/assets/figma/accessory-2.png' },
+    { title: 'pomabru', desc: 'Designed for those who refuse to compromise on quality, pomabru brings the café experience to wherever you are.', img: '/pomabru/pomabru.png' },
+    { title: 'Scoop', desc: 'A handy scoop that perfectly measures the ideal amount of ground coffee for one delicious espresso, ensuring consistency and flavour in every cup.', img: '/pomabru/Scoop.png' },
+    { title: 'water-resistant carry case', desc: 'The protective case keeps your pomabru safe and ready for adventure.', img: '/pomabru/water-resistant carry case.png' },
+    { title: 'usb-c fast charging cable', desc: 'Universal, reliable and quick to recharge your pomabru. You can even use your pomabru as a source to charge a different device.', img: '/pomabru/usb-c fast charging cable  .png' },
   ],
   'pomabrush': [
     { title: 'pomabrush', desc: 'The flagship electric toothbrush featuring a medical-grade silicone handle and sonic motor.', img: '/assets/figma/lineup-pomabrush.png' },
@@ -155,9 +155,9 @@ interface CompatibleItem {
 
 const COMPATIBLE_DATA: Record<string, CompatibleItem[]> = {
   'pomabru': [
-    { title: 'Nespresso®-style pods', desc: 'Designed for those who refuse to compromise on quality, pomabru brings the café experience to wherever you are.', img: '/assets/figma/skipcafe-bg.png' },
-    { title: 'Dolce Gusto®-style pods', desc: 'Designed for those who refuse to compromise on quality, pomabru brings the café experience to wherever you are.', img: '/assets/figma/solutions-bg.png' },
-    { title: 'ground coffee', desc: 'Designed for those who refuse to compromise on quality, pomabru brings the café experience to wherever you are.', img: '/assets/figma/hero-bg.png' },
+    { title: 'Nespresso®-style pods', desc: 'Designed for those who refuse to compromise on quality, pomabru brings the café experience to wherever you are.', img: '/pomabru/Nespresso©-style pods.png' },
+    { title: 'Dolce Gusto®-style pods', desc: 'Designed for those who refuse to compromise on quality, pomabru brings the café experience to wherever you are.', img: '/pomabru/Dulce Gusto©-style pods.png' },
+    { title: 'ground coffee', desc: 'Designed for those who refuse to compromise on quality, pomabru brings the café experience to wherever you are.', img: '/pomabru/ground coffee.png' },
   ],
   'pomabrush': [
     { title: 'Carbon replacement heads', desc: 'Carbon-infused nylon bristles designed for plaque removal.', img: '/assets/figma/accessory-1.png' },
@@ -705,7 +705,7 @@ export default function ProductDetailPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {insideTheBoxItems.map((item, idx) => (
                 <div key={idx} className="flex flex-col group">
-                  <div className="relative aspect-[4/3] w-full rounded-2xl bg-white border border-neutral-100 overflow-hidden mb-4">
+                  <div className="relative aspect-[3/4] w-full rounded-2xl bg-white border border-neutral-100 overflow-hidden mb-4">
                     <Image
                       src={item.img}
                       alt={item.title}
