@@ -150,10 +150,11 @@ export default function CartDrawer() {
                   ) : (
                     <>
                       <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                      Secure checkout on shopify
+                      Secure checkout on Medusa
                     </>
                   )}
                 </button>
+
               </div>
             )}
           </motion.div>

@@ -4,11 +4,11 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Customer,
-  shopifyLogin,
-  shopifyRegister,
-  shopifyGetCustomer,
-  shopifyLogout,
-} from '@/lib/shopify';
+  medusaLogin,
+  medusaRegister,
+  medusaGetCustomer,
+  medusaLogout,
+} from '@/lib/medusa';
 
 interface AuthContextType {
   customer: Customer | null;
@@ -26,6 +26,21 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function getStoredToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('medusa_customer_access_token') || localStorage.getItem('shopify_customer_access_token');
+}
+
+function setStoredToken(token: string) {
+  localStorage.setItem('medusa_customer_access_token', token);
+  localStorage.setItem('shopify_customer_access_token', token);
+}
+
+function removeStoredToken() {
+  localStorage.removeItem('medusa_customer_access_token');
+  localStorage.removeItem('shopify_customer_access_token');
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,22 +48,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadProfile = async (token: string) => {
     try {
-      const { customer: fetchedCustomer, errors } = await shopifyGetCustomer(token);
+      const { customer: fetchedCustomer, errors } = await medusaGetCustomer(token);
       if (errors || !fetchedCustomer) {
-        localStorage.removeItem('shopify_customer_access_token');
+        removeStoredToken();
         setCustomer(null);
       } else {
         setCustomer(fetchedCustomer);
       }
     } catch (err) {
-      console.error('Error loading Shopify customer profile:', err);
-      localStorage.removeItem('shopify_customer_access_token');
+      console.error('Error loading customer profile:', err);
+      removeStoredToken();
       setCustomer(null);
     }
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('shopify_customer_access_token');
+    const token = getStoredToken();
     if (token) {
       loadProfile(token).finally(() => setLoading(false));
     } else {
@@ -59,13 +74,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const { accessToken, errors } = await shopifyLogin({ email, password });
+      const { accessToken, errors } = await medusaLogin({ email, password });
       if (errors && errors.length > 0) {
         setLoading(false);
         return { success: false, error: errors[0] };
       }
       if (accessToken) {
-        localStorage.setItem('shopify_customer_access_token', accessToken);
+        setStoredToken(accessToken);
         await loadProfile(accessToken);
         setLoading(false);
         return { success: true };
@@ -86,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }) => {
     setLoading(true);
     try {
-      const { customer: newCustomer, errors } = await shopifyRegister(input);
+      const { customer: newCustomer, errors } = await medusaRegister(input);
       if (errors && errors.length > 0) {
         setLoading(false);
         return { success: false, errors };
@@ -106,17 +121,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
-    const token = localStorage.getItem('shopify_customer_access_token');
+    const token = getStoredToken();
     if (token) {
-      await shopifyLogout(token);
+      await medusaLogout(token);
     }
-    localStorage.removeItem('shopify_customer_access_token');
+    removeStoredToken();
     setCustomer(null);
     router.push('/');
   };
 
   const refreshProfile = async () => {
-    const token = localStorage.getItem('shopify_customer_access_token');
+    const token = getStoredToken();
     if (token) {
       await loadProfile(token);
     }
@@ -145,3 +160,4 @@ export function useAuth() {
   }
   return context;
 }
+

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { env } from '@/config/env';
-import { generateCheckoutLink } from '@/lib/shopify';
+import { generateCheckoutLink } from '@/lib/medusa';
 
 export async function GET() {
   const logs: string[] = [];
@@ -8,23 +8,17 @@ export async function GET() {
   let checkoutOk = false;
   let mockFlowOk = false;
 
-  logs.push(`[${new Date().toISOString()}] Starting E2E Storefront Diagnostic Sweep...`);
+  logs.push(`[${new Date().toISOString()}] Starting E2E Medusa Storefront Diagnostic Sweep...`);
 
   // 1. Environment Check
   try {
-    logs.push(`[INFO] Verifying Storefront Domain: "${env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_DOMAIN}"`);
-    if (env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_DOMAIN && env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_DOMAIN.includes('.myshopify.com')) {
-      logs.push(`[SUCCESS] Domain is valid Shopify domain format.`);
+    logs.push(`[INFO] Verifying Medusa Backend URL: "${env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}"`);
+    if (env.NEXT_PUBLIC_MEDUSA_BACKEND_URL && env.NEXT_PUBLIC_MEDUSA_BACKEND_URL.startsWith('http')) {
+      logs.push(`[SUCCESS] Medusa Backend URL is valid HTTP/HTTPS URL format.`);
     } else {
-      logs.push(`[WARN] Domain does not use standard .myshopify.com suffix, proceeding.`);
+      logs.push(`[WARN] Backend URL missing protocol prefix, proceeding.`);
     }
 
-    const token = env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN;
-    if (token.startsWith('mock_')) {
-      logs.push(`[INFO] Storefront is operating under sandboxed Sandbox Mode (Mock Token).`);
-    } else {
-      logs.push(`[INFO] Storefront is operating under active Live Credentials.`);
-    }
     environmentOk = true;
     logs.push(`[SUCCESS] Environment validation check completed.`);
   } catch (err: any) {
@@ -34,7 +28,6 @@ export async function GET() {
   // 2. Inventory Flow Check
   try {
     logs.push(`[INFO] Simulating inventory quantities lookup for product SKU variants.`);
-    // Test that the mock inventory boundaries work
     const dummyQty = 0;
     if (dummyQty === 0) {
       logs.push(`[SUCCESS] Inventory simulation trigger checked: SKU inventory 0 successfully marks status as Disabled.`);
@@ -48,19 +41,16 @@ export async function GET() {
   try {
     logs.push(`[INFO] Triggering checkout link generation handshake...`);
     const mockLineItems = [
-      { variantId: 'gid://shopify/ProductVariant/421389028', quantity: 2 },
+      { variantId: 'variant_medusa_pomabrush_421389028', quantity: 2 },
     ];
     const checkoutUrl = await generateCheckoutLink(mockLineItems);
     logs.push(`[INFO] Generated Checkout Link: "${checkoutUrl}"`);
 
-    // Verify format matches Shopify domain + path structure
-    const isShopifyDomain = checkoutUrl.includes('.myshopify.com') || checkoutUrl.includes('.shopify.com') || checkoutUrl.includes(env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_DOMAIN);
-    const hasCartPath = checkoutUrl.includes('/cart/');
-    if (isShopifyDomain && hasCartPath) {
-      logs.push(`[SUCCESS] Link bridge checkout URL validated: matched Shopify cart/checkout pattern.`);
+    if (checkoutUrl.includes('/checkout')) {
+      logs.push(`[SUCCESS] Link bridge checkout URL validated: matched Medusa checkout pattern.`);
       checkoutOk = true;
     } else {
-      logs.push(`[ERROR] Link bridge checkout URL format mismatch: Expected Shopify cart/checkout URL, got "${checkoutUrl}"`);
+      logs.push(`[ERROR] Link bridge checkout URL format mismatch: Expected Medusa checkout URL, got "${checkoutUrl}"`);
     }
   } catch (err: any) {
     logs.push(`[ERROR] Checkout Link Bridge handshake failed: ${err.message}`);
@@ -80,3 +70,4 @@ export async function GET() {
     logs,
   });
 }
+

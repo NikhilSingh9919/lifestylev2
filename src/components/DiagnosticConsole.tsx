@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Terminal, Shield, Play, ChevronDown, ChevronUp, RefreshCw, Eye, EyeOff } from 'lucide-react';
-import { mockInventoryStore } from '@/lib/shopify';
+import { mockInventoryStore } from '@/lib/medusa';
+
 
 export default function DiagnosticConsole() {
   const [isOpen, setIsOpen] = useState(false);

@@ -334,18 +334,19 @@ function PomaHome() {
 
   useEffect(() => {
     async function fetchAllProducts() {
+      const mockData = [
+        { id: '1', title: 'Pomabrush Model 2.0', handle: 'pomabrush', productType: 'Brush' },
+        { id: '2', title: 'Pomafloss', handle: 'pomafloss', productType: 'Floss' },
+        { id: '3', title: 'Pomabru Espresso Maker', handle: 'pomabru', productType: 'Brew' },
+        { id: '4', title: 'Pomafloss Model 1.0', handle: 'pomafloss-model-1-0', productType: 'Floss' },
+        { id: '5', title: 'Pomabrush Heads - Silicone', handle: 'pomaaccessoris', productType: 'Accessories' },
+        { id: '6', title: 'Pomaclip', handle: 'pomaclip', productType: 'Accessories' },
+        { id: '7', title: 'Pomacloth', handle: 'pomacloth', productType: 'Accessories' }
+      ];
+
       try {
         setLoadingProducts(true);
         if (env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN.startsWith('mock_')) {
-          const mockData = [
-            { id: '1', title: 'Pomabrush Model 2.0', handle: 'pomabrush', productType: 'Brush' },
-            { id: '2', title: 'Pomafloss', handle: 'pomafloss', productType: 'Floss' },
-            { id: '3', title: 'Pomabru Espresso Makero', handle: 'pomabru', productType: 'Brew' },
-            { id: '4', title: 'pomafloss model 1.0', handle: 'pomafloss-model-1-0', productType: 'Floss' },
-            { id: '5', title: 'Pomabrush Heads - Silicone', handle: 'pomaaccessoris', productType: 'Accessories' },
-            { id: '6', title: 'Pomaclip', handle: 'pomaclip', productType: 'Accessories' },
-            { id: '7', title: 'pomacloth', handle: 'pomacloth', productType: 'Accessories' }
-          ];
           setAllProducts(mockData);
           setLoadingProducts(false);
           return;
@@ -373,12 +374,19 @@ function PomaHome() {
           body: JSON.stringify({ query }),
         });
         
+        if (!res.ok) {
+          throw new Error(`Shopify API HTTP error: ${res.status}`);
+        }
+
         const json = await res.json();
-        if (json.data?.products?.nodes) {
+        if (json.data?.products?.nodes && json.data.products.nodes.length > 0) {
           setAllProducts(json.data.products.nodes);
+        } else {
+          setAllProducts(mockData);
         }
       } catch (err) {
-        console.error('Failed to fetch dynamic products:', err);
+        console.warn('Failed to fetch dynamic products, using fallback mock products:', err);
+        setAllProducts(mockData);
       } finally {
         setLoadingProducts(false);
       }

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { generateCheckoutLink } from '@/lib/shopify';
+import { generateCheckoutLink } from '@/lib/medusa';
 
 export interface CartItem {
   variantId: string;
@@ -87,7 +87,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         variantId: item.variantId,
         quantity: item.quantity,
       }));
-      const token = typeof window !== 'undefined' ? localStorage.getItem('shopify_customer_access_token') || undefined : undefined;
+      const token = typeof window !== 'undefined' 
+        ? localStorage.getItem('medusa_customer_access_token') || localStorage.getItem('shopify_customer_access_token') || undefined 
+        : undefined;
       const checkoutUrl = await generateCheckoutLink(items, token);
       window.location.href = checkoutUrl;
     } catch (error) {
@@ -95,6 +97,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setIsCheckingOut(false);
     }
   };
+
 
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
   const cartSubtotal = cart.reduce((acc, item) => acc + parseFloat(item.price) * item.quantity, 0);
