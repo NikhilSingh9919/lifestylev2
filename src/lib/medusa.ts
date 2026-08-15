@@ -81,9 +81,9 @@ export function getMockProduct(handle: string): MedusaProduct | null {
   if (handle === 'pomabrush-hero' || handle === 'pomabrush') {
     return {
       id: 'variant_medusa_pomabrush_421389028',
-      title: 'pomabrush model 2.0',
-      handle: handle,
-      description: 'Engineered to perform beautifully, the pomabrush combines advanced sonic technology with sleek, travel-ready design.',
+      title: 'Pomabrush',
+      handle: 'pomabrush',
+      description: "The brand's flagship minimalist sonic electric toothbrush featuring medical-grade silicone, charcoal-infused bristles, and a compact charging travel case.",
       priceRange: {
         minVariantPrice: {
           amount: '135.00',
@@ -93,19 +93,33 @@ export function getMockProduct(handle: string): MedusaProduct | null {
         nodes: [
           {
             url: '/assets/figma/hero-featured.png',
-            altText: 'pomabrush model 2.0',
+            altText: 'Pomabrush',
+          },
+          {
+            url: '/assets/figma/lineup-pomabrush.png',
+            altText: 'Pomabrush View 2',
           },
         ],
       },
       variants: {
         nodes: [
           {
-            id: 'variant_medusa_pomabrush_421389028',
+            id: 'variant_medusa_pomabrush_black',
             title: 'Charcoal Black',
             price: '135.00',
-            sku: 'PB-BLACK-02',
+            sku: 'PB-BLACK-01',
             availableForSale: true,
             quantityAvailable: 15,
+            selectedOptions: [{ name: 'Color', value: 'Charcoal Black' }],
+          },
+          {
+            id: 'variant_medusa_pomabrush_white',
+            title: 'Cotton White',
+            price: '135.00',
+            sku: 'PB-WHITE-01',
+            availableForSale: true,
+            quantityAvailable: 15,
+            selectedOptions: [{ name: 'Color', value: 'Cotton White' }],
           },
         ],
       },
@@ -115,31 +129,32 @@ export function getMockProduct(handle: string): MedusaProduct | null {
   if (handle === 'pomafloss-floating' || handle === 'pomafloss') {
     return {
       id: 'variant_medusa_pomafloss_901847102',
-      title: 'pomafloss',
-      handle: handle,
-      description: 'Magnetic wall-mount dental floss dispenser. Weightless aesthetic, clean storage, and premium organic expanding floss.',
+      title: 'Pomafloss',
+      handle: 'pomafloss',
+      description: 'A portable, compact water flosser designed for daily gum care and travel.',
       priceRange: {
         minVariantPrice: {
-          amount: '19.00',
+          amount: '39.00',
         },
       },
       images: {
         nodes: [
           {
             url: '/assets/figma/lineup-pomafloss.png',
-            altText: 'PomaFloss Floating Dispenser',
+            altText: 'Pomafloss',
           },
         ],
       },
       variants: {
         nodes: [
           {
-            id: 'variant_medusa_pomafloss_901847102',
-            title: 'Satin Gold',
-            price: '19.00',
-            sku: 'PF-GOLD-02',
+            id: 'variant_medusa_pomafloss_white',
+            title: 'Cotton White',
+            price: '39.00',
+            sku: 'PF-WHITE-01',
             availableForSale: true,
-            quantityAvailable: 8,
+            quantityAvailable: 20,
+            selectedOptions: [{ name: 'Color', value: 'Cotton White' }],
           },
         ],
       },
@@ -149,9 +164,9 @@ export function getMockProduct(handle: string): MedusaProduct | null {
   if (handle === 'pomabru') {
     return {
       id: 'variant_medusa_pomabru_887711223',
-      title: 'pomabru espresso maker',
+      title: 'Pomabru',
       handle: 'pomabru',
-      description: 'From early flights to quiet mountain mornings, it reimagines the ritual of espresso for modern travel—combining convenience, precision, and the pleasure of a perfect cup, wherever you go.',
+      description: 'A compact, portable handheld travel espresso machine compatible with coffee capsules and ground coffee.',
       priceRange: {
         minVariantPrice: {
           amount: '135.00',
@@ -161,61 +176,222 @@ export function getMockProduct(handle: string): MedusaProduct | null {
         nodes: [
           {
             url: '/assets/figma/lineup-pomabru.png',
-            altText: 'PomaBru Espresso Maker',
+            altText: 'Pomabru',
           },
         ],
       },
       variants: {
         nodes: [
           {
-            id: 'variant_medusa_pomabru_887711223',
-            title: 'Travel Edition',
+            id: 'variant_medusa_pomabru_black',
+            title: 'Charcoal Black',
             price: '135.00',
-            sku: 'PB-BRU-01',
+            sku: 'PBRU-BLACK-01',
             availableForSale: true,
-            quantityAvailable: 5,
+            quantityAvailable: 10,
+            selectedOptions: [{ name: 'Color', value: 'Charcoal Black' }],
           },
         ],
       },
     };
   }
 
-  if (handle === 'pomaaccessoris') {
+  if (handle === 'pomabrush-heads-advanced') {
     return {
-      id: 'variant_medusa_pomaaccessoris_774433991',
-      title: 'pomabrush advanced brush heads - pack of 4',
-      handle: 'pomaaccessoris',
-      description: 'Engineered to perform beautifully, the pomabrush combines advanced sonic technology with sleek, travel-ready design.',
+      id: 'variant_medusa_pbh_advanced',
+      title: 'Pomabrush Heads – Advanced',
+      handle: 'pomabrush-heads-advanced',
+      description: 'Replacement brush heads engineered for deeper surface cleaning and plaque removal.',
       priceRange: {
         minVariantPrice: {
-          amount: '35.00',
+          amount: '25.00',
         },
       },
       images: {
         nodes: [
           {
             url: '/assets/figma/accessory-1.png',
-            altText: 'pomabrush advanced brush heads - pack of 4',
+            altText: 'Pomabrush Heads – Advanced',
           },
         ],
       },
       variants: {
         nodes: [
           {
-            id: 'variant_medusa_pomaaccessoris_774433991',
+            id: 'variant_medusa_pbh_adv_black',
             title: 'Charcoal Black',
-            price: '35.00',
-            sku: 'PB-ACC-01',
+            price: '25.00',
+            sku: 'PBH-ADV-BLACK',
             availableForSale: true,
             quantityAvailable: 50,
+            selectedOptions: [{ name: 'Color', value: 'Charcoal Black' }],
           },
           {
-            id: 'variant_medusa_pomaaccessoris_774433992',
+            id: 'variant_medusa_pbh_adv_white',
             title: 'Cotton White',
-            price: '35.00',
-            sku: 'PB-ACC-02',
+            price: '25.00',
+            sku: 'PBH-ADV-WHITE',
             availableForSale: true,
             quantityAvailable: 50,
+            selectedOptions: [{ name: 'Color', value: 'Cotton White' }],
+          },
+        ],
+      },
+    };
+  }
+
+  if (handle === 'pomabrush-heads-nylon-silicone') {
+    return {
+      id: 'variant_medusa_pbh_nylon_silicone',
+      title: 'Pomabrush Heads – Nylon-Silicone',
+      handle: 'pomabrush-heads-nylon-silicone',
+      description: 'Hybrid replacement heads combining charcoal-infused nylon inner bristles with outer protective silicone loops.',
+      priceRange: {
+        minVariantPrice: {
+          amount: '25.00',
+        },
+      },
+      images: {
+        nodes: [
+          {
+            url: '/assets/figma/lineup-pomaaccessories.png',
+            altText: 'Pomabrush Heads – Nylon-Silicone',
+          },
+        ],
+      },
+      variants: {
+        nodes: [
+          {
+            id: 'variant_medusa_pbh_nylon_black',
+            title: 'Charcoal Black',
+            price: '25.00',
+            sku: 'PBH-NYLON-BLACK',
+            availableForSale: true,
+            quantityAvailable: 50,
+            selectedOptions: [{ name: 'Color', value: 'Charcoal Black' }],
+          },
+          {
+            id: 'variant_medusa_pbh_nylon_white',
+            title: 'Cotton White',
+            price: '25.00',
+            sku: 'PBH-NYLON-WHITE',
+            availableForSale: true,
+            quantityAvailable: 50,
+            selectedOptions: [{ name: 'Color', value: 'Cotton White' }],
+          },
+        ],
+      },
+    };
+  }
+
+  if (handle === 'pomabrush-heads-pure-silicone' || handle === 'pomaaccessoris') {
+    return {
+      id: 'variant_medusa_pbh_pure_silicone',
+      title: 'Pomabrush Heads – Pure Silicone',
+      handle: handle,
+      description: 'Ultra-gentle, all-silicone replacement heads tailored for sensitive teeth and gums.',
+      priceRange: {
+        minVariantPrice: {
+          amount: '25.00',
+        },
+      },
+      images: {
+        nodes: [
+          {
+            url: '/assets/figma/accessory-1.png',
+            altText: 'Pomabrush Heads – Pure Silicone',
+          },
+        ],
+      },
+      variants: {
+        nodes: [
+          {
+            id: 'variant_medusa_pbh_sil_black',
+            title: 'Charcoal Black',
+            price: '25.00',
+            sku: 'PBH-SIL-BLACK',
+            availableForSale: true,
+            quantityAvailable: 50,
+            selectedOptions: [{ name: 'Color', value: 'Charcoal Black' }],
+          },
+          {
+            id: 'variant_medusa_pbh_sil_white',
+            title: 'Cotton White',
+            price: '25.00',
+            sku: 'PBH-SIL-WHITE',
+            availableForSale: true,
+            quantityAvailable: 50,
+            selectedOptions: [{ name: 'Color', value: 'Cotton White' }],
+          },
+        ],
+      },
+    };
+  }
+
+  if (handle === 'pomaclip') {
+    return {
+      id: 'variant_medusa_pomaclip_1',
+      title: 'Pomaclip',
+      handle: 'pomaclip',
+      description: 'A minimalist magnetic bathroom wall mount/holder designed to dock the Pomabrush.',
+      priceRange: {
+        minVariantPrice: {
+          amount: '19.00',
+        },
+      },
+      images: {
+        nodes: [
+          {
+            url: '/assets/figma/accessory-4.png',
+            altText: 'Pomaclip',
+          },
+        ],
+      },
+      variants: {
+        nodes: [
+          {
+            id: 'variant_medusa_pomaclip_silver',
+            title: 'Matte Silver',
+            price: '19.00',
+            sku: 'PCLIP-SILVER',
+            availableForSale: true,
+            quantityAvailable: 30,
+            selectedOptions: [{ name: 'Color', value: 'Matte Silver' }],
+          },
+        ],
+      },
+    };
+  }
+
+  if (handle === 'pomacloth') {
+    return {
+      id: 'variant_medusa_pomacloth_1',
+      title: 'Pomacloth',
+      handle: 'pomacloth',
+      description: 'A premium, soft microfiber cleaning cloth designed to wipe down and maintain Poma devices and travel cases.',
+      priceRange: {
+        minVariantPrice: {
+          amount: '12.00',
+        },
+      },
+      images: {
+        nodes: [
+          {
+            url: '/assets/figma/accessory-2.png',
+            altText: 'Pomacloth',
+          },
+        ],
+      },
+      variants: {
+        nodes: [
+          {
+            id: 'variant_medusa_pomacloth_black',
+            title: 'Charcoal Black',
+            price: '12.00',
+            sku: 'PCLOTH-BLACK',
+            availableForSale: true,
+            quantityAvailable: 50,
+            selectedOptions: [{ name: 'Color', value: 'Charcoal Black' }],
           },
         ],
       },
@@ -228,14 +404,14 @@ export function getMockProduct(handle: string): MedusaProduct | null {
     title: formattedTitle,
     handle: handle,
     description: 'Poma Lifestyle premium curated item.',
-    priceRange: { minVariantPrice: { amount: '35.00' } },
+    priceRange: { minVariantPrice: { amount: '25.00' } },
     images: { nodes: [{ url: '/assets/figma/accessory-1.png', altText: formattedTitle }] },
     variants: {
       nodes: [
         {
           id: `variant_medusa_mock_${handle}`,
           title: 'Standard',
-          price: '35.00',
+          price: '25.00',
           sku: `MOCK-${handle.toUpperCase()}`,
           availableForSale: true,
           quantityAvailable: 25,
@@ -279,6 +455,28 @@ export async function fetchMedusaProductByHandle(handle: string): Promise<Medusa
   return getMockProduct(handle);
 }
 
+export function formatImageUrl(url?: string | null): string {
+  if (!url) return '/assets/products/placeholder.png';
+  if (url.startsWith('data:')) return url;
+
+  const backendUrl = env.NEXT_PUBLIC_MEDUSA_BACKEND_URL.replace(/\/$/, '');
+  let fullUrl = url.trim();
+
+  // Handle relative paths (e.g. /static/... or static/... or /uploads/...)
+  if (fullUrl.startsWith('/')) {
+    fullUrl = `${backendUrl}${fullUrl}`;
+  } else if (!fullUrl.startsWith('http://') && !fullUrl.startsWith('https://') && !fullUrl.startsWith('//')) {
+    fullUrl = `${backendUrl}/${fullUrl}`;
+  }
+
+  try {
+    const decoded = decodeURIComponent(fullUrl);
+    return encodeURI(decoded);
+  } catch {
+    return encodeURI(fullUrl);
+  }
+}
+
 function adaptMedusaProduct(medusaProd: any): MedusaProduct {
   const variants = (medusaProd.variants || []).map((v: any) => ({
     id: v.id,
@@ -288,15 +486,15 @@ function adaptMedusaProduct(medusaProd: any): MedusaProduct {
     availableForSale: v.inventory_quantity !== undefined ? v.inventory_quantity > 0 : true,
     quantityAvailable: v.inventory_quantity ?? 10,
     selectedOptions: v.options?.map((opt: any) => ({ name: opt.option?.title || 'Option', value: opt.value })),
-    image: v.thumbnail ? { url: v.thumbnail, altText: v.title || '' } : null,
+    image: v.thumbnail ? { url: formatImageUrl(v.thumbnail), altText: v.title || '' } : null,
   }));
 
   const images = (medusaProd.images || []).map((img: any) => ({
-    url: img.url,
+    url: formatImageUrl(typeof img === 'string' ? img : img.url),
     altText: medusaProd.title || '',
   }));
   if (images.length === 0 && medusaProd.thumbnail) {
-    images.push({ url: medusaProd.thumbnail, altText: medusaProd.title || '' });
+    images.push({ url: formatImageUrl(medusaProd.thumbnail), altText: medusaProd.title || '' });
   }
 
   const minPrice = variants[0]?.price || '35.00';
@@ -388,49 +586,46 @@ export interface Customer {
   }>;
 }
 
-const mockCustomers: Record<string, { customer: Customer; passwordHash: string }> = {
-  'test@example.com': {
-    customer: {
-      id: 'cus_medusa_123456789',
-      firstName: 'Nikhil',
-      lastName: 'Singh',
-      email: 'test@example.com',
-      phone: '+1 (555) 019-2834',
-      defaultAddress: {
-        id: 'addr_medusa_12345',
-        address1: '123 Premium Lane',
-        address2: 'Apt 4B',
-        city: 'New York',
-        province: 'NY',
-        zip: '10001',
-        country: 'United States',
-      },
-      orders: [
-        {
-          id: 'order_medusa_1111',
-          orderNumber: 1001,
-          processedAt: '2026-07-10T14:30:00Z',
-          financialStatus: 'PAID',
-          fulfillmentStatus: 'FULFILLED',
-          totalPrice: { amount: '270.00', currencyCode: 'USD' },
-          lineItems: [
-            {
-              title: 'pomabrush model 2.0 (Charcoal Black)',
-              quantity: 2,
-              imageUrl: '/assets/figma/hero-featured.png',
-            },
-          ],
-        },
-      ],
-    },
-    passwordHash: 'password123',
-  },
-};
+const mockCustomers: Record<string, { customer: Customer; passwordHash: string }> = {};
 
-export async function shopifyRegister(
-  input: any
-): Promise<{ customer?: { id: string; email: string }; errors?: string[] }> {
-  return medusaRegister(input);
+function getMockCustomer(email: string) {
+  const key = email.toLowerCase();
+  if (mockCustomers[key]) return mockCustomers[key];
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem(`poma_user_${key}`);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        mockCustomers[key] = parsed;
+        return parsed;
+      } catch (e) {
+        console.error('Failed to parse saved user', e);
+      }
+    }
+  }
+  return null;
+}
+
+function saveMockCustomer(email: string, passwordHash: string, customer: Customer) {
+  const key = email.toLowerCase();
+  const entry = { customer, passwordHash };
+  mockCustomers[key] = entry;
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(`poma_user_${key}`, JSON.stringify(entry));
+    localStorage.setItem('poma_active_customer', JSON.stringify(customer));
+  }
+}
+
+function getMedusaHeaders(token?: string): Record<string, string> {
+  const pubKey = env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || 'pk_659d8e4863ae8e42500da9365796d43bb13c5a33b937ac0a6945ade6579ddd71';
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'x-publishable-api-key': pubKey,
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
 }
 
 export async function medusaRegister(
@@ -438,36 +633,79 @@ export async function medusaRegister(
 ): Promise<{ customer?: { id: string; email: string }; errors?: string[] }> {
   const backendUrl = env.NEXT_PUBLIC_MEDUSA_BACKEND_URL.replace(/\/$/, '');
   const { email, password, firstName, lastName } = input;
+  const headers = getMedusaHeaders();
+
+  const existing = getMockCustomer(email);
+  if (existing && existing.customer.id.startsWith('cus_') && !existing.customer.id.startsWith('cus_medusa_')) {
+    return { errors: ['An account with this email address already exists.'] };
+  }
+
+  const generatedId = `cus_medusa_${Math.floor(Math.random() * 100000000)}`;
+  const localCustomer: Customer = {
+    id: generatedId,
+    firstName: firstName || '',
+    lastName: lastName || '',
+    email,
+    orders: [],
+  };
+  saveMockCustomer(email, password, localCustomer);
 
   try {
-    const res = await fetch(`${backendUrl}/store/customers`, {
+    // Step 1: Register auth identity in Medusa 2.0 Auth Module
+    const authRes = await fetch(`${backendUrl}/auth/customer/emailpass/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, first_name: firstName, last_name: lastName }),
+      headers,
+      body: JSON.stringify({ email, password }),
     });
-    if (res.ok) {
-      const data = await res.json();
-      return { customer: { id: data.customer.id, email: data.customer.email } };
+
+    if (authRes.ok) {
+      const authData = await authRes.json();
+      const token = authData.token;
+
+      if (token) {
+        // Step 2: Create Customer record linked to Auth Identity in Medusa 2.0 Customer Module
+        const custRes = await fetch(`${backendUrl}/store/customers`, {
+          method: 'POST',
+          headers: getMedusaHeaders(token),
+          body: JSON.stringify({
+            email,
+            first_name: firstName,
+            last_name: lastName,
+          }),
+        });
+
+        if (custRes.ok) {
+          const custData = await custRes.json();
+          const c = custData.customer;
+          if (c && c.id) {
+            localCustomer.id = c.id;
+            saveMockCustomer(email, password, localCustomer);
+          }
+          return { customer: { id: localCustomer.id, email: localCustomer.email } };
+        }
+      }
+    } else {
+      // Fallback for Medusa v1 style /store/customers API
+      const storeRes = await fetch(`${backendUrl}/store/customers`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ email, password, first_name: firstName, last_name: lastName }),
+      });
+      if (storeRes.ok) {
+        const data = await storeRes.json();
+        const c = data.customer;
+        if (c && c.id) {
+          localCustomer.id = c.id;
+          saveMockCustomer(email, password, localCustomer);
+        }
+        return { customer: { id: localCustomer.id, email: localCustomer.email } };
+      }
     }
   } catch (err) {
     console.warn('Medusa customer registration API offline, using local session mock:', err);
   }
 
-  if (mockCustomers[email]) {
-    return { errors: ['An account with this email address already exists.'] };
-  }
-  const id = `cus_medusa_${Math.floor(Math.random() * 100000000)}`;
-  mockCustomers[email] = {
-    customer: { id, firstName: firstName || '', lastName: lastName || '', email, orders: [] },
-    passwordHash: password,
-  };
-  return { customer: { id, email } };
-}
-
-export async function shopifyLogin(
-  input: any
-): Promise<{ accessToken?: string; expiresAt?: string; errors?: string[] }> {
-  return medusaLogin(input);
+  return { customer: { id: localCustomer.id, email: localCustomer.email } };
 }
 
 export async function medusaLogin(
@@ -475,36 +713,48 @@ export async function medusaLogin(
 ): Promise<{ accessToken?: string; expiresAt?: string; errors?: string[] }> {
   const backendUrl = env.NEXT_PUBLIC_MEDUSA_BACKEND_URL.replace(/\/$/, '');
   const { email, password } = input;
+  const headers = getMedusaHeaders();
 
   try {
-    const res = await fetch(`${backendUrl}/store/auth/token`, {
+    // Try Medusa v2 /auth/customer/emailpass
+    let res = await fetch(`${backendUrl}/auth/customer/emailpass`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ email, password }),
     });
+
+    if (!res.ok) {
+      // Fallback to /store/auth/token
+      res = await fetch(`${backendUrl}/store/auth/token`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ email, password }),
+      });
+    }
+
     if (res.ok) {
       const data = await res.json();
-      return {
-        accessToken: data.access_token,
-        expiresAt: new Date(Date.now() + 86400 * 30 * 1000).toISOString(),
-      };
+      const token = data.token || data.access_token;
+      if (token) {
+        return {
+          accessToken: token,
+          expiresAt: new Date(Date.now() + 86400 * 30 * 1000).toISOString(),
+        };
+      }
     }
   } catch (err) {
     console.warn('Medusa login API offline, using local session mock:', err);
   }
 
-  const user = mockCustomers[email];
+  const user = getMockCustomer(email);
   if (user && user.passwordHash === password) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('poma_active_customer', JSON.stringify(user.customer));
+    }
     const mockToken = `mock_token_${email}_${Date.now()}`;
     return { accessToken: mockToken, expiresAt: new Date(Date.now() + 86400 * 30 * 1000).toISOString() };
   }
   return { errors: ['Unidentified customer. Check your email and password.'] };
-}
-
-export async function shopifyGetCustomer(
-  accessToken: string
-): Promise<{ customer?: Customer; errors?: string[] }> {
-  return medusaGetCustomer(accessToken);
 }
 
 export async function medusaGetCustomer(
@@ -514,48 +764,93 @@ export async function medusaGetCustomer(
 
   if (!accessToken.startsWith('mock_token_')) {
     try {
-      const res = await fetch(`${backendUrl}/store/customers/me`, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
+      const headers = getMedusaHeaders(accessToken);
+
+      const res = await fetch(`${backendUrl}/store/customers/me?fields=*addresses,*orders`, {
+        headers,
       });
       if (res.ok) {
         const data = await res.json();
         const c = data.customer;
-        return {
-          customer: {
+        if (c) {
+          const defaultAddr = c.addresses?.[0] ? {
+            id: c.addresses[0].id,
+            address1: c.addresses[0].address_1 || '',
+            address2: c.addresses[0].address_2 || undefined,
+            city: c.addresses[0].city || '',
+            province: c.addresses[0].province || '',
+            zip: c.addresses[0].postal_code || '',
+            country: c.addresses[0].country_code?.toUpperCase() || '',
+          } : undefined;
+
+          const orders = (c.orders || []).map((o: any) => ({
+            id: o.id,
+            orderNumber: o.display_id || parseInt(o.id.replace(/\D/g, '')) || 1001,
+            processedAt: o.created_at,
+            financialStatus: o.payment_status?.toUpperCase() || 'PAID',
+            fulfillmentStatus: o.fulfillment_status?.toUpperCase() || 'FULFILLED',
+            totalPrice: {
+              amount: (o.total / 100 || 0).toFixed(2),
+              currencyCode: (o.currency_code || 'USD').toUpperCase(),
+            },
+            lineItems: (o.items || []).map((item: any) => ({
+              title: item.title || item.product_title || 'Poma Item',
+              quantity: item.quantity || 1,
+              imageUrl: item.thumbnail ? formatImageUrl(item.thumbnail) : undefined,
+            })),
+          }));
+
+          const activeCustomer: Customer = {
             id: c.id,
             firstName: c.first_name || '',
             lastName: c.last_name || '',
             email: c.email,
             phone: c.phone,
-            orders: [],
-          },
-        };
+            defaultAddress: defaultAddr,
+            orders,
+          };
+
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('poma_active_customer', JSON.stringify(activeCustomer));
+          }
+
+          return { customer: activeCustomer };
+        }
       }
     } catch (err) {
       console.warn('Medusa getCustomer API offline:', err);
     }
   }
 
+  // Fallback to active customer stored in localStorage
+  if (typeof window !== 'undefined') {
+    const savedActive = localStorage.getItem('poma_active_customer');
+    if (savedActive) {
+      try {
+        const parsed = JSON.parse(savedActive);
+        if (parsed && parsed.email) {
+          return { customer: parsed };
+        }
+      } catch (e) {}
+    }
+  }
+
   const parts = accessToken.split('_');
-  const email = parts[2] || 'test@example.com';
-  const user = mockCustomers[email] || mockCustomers['test@example.com'];
-  if (user) {
-    return { customer: user.customer };
+  const email = parts[2];
+  if (email) {
+    const user = getMockCustomer(email);
+    if (user) {
+      return { customer: user.customer };
+    }
   }
   return { errors: ['Session not found or expired.'] };
-}
-
-export async function shopifyLogout(
-  accessToken: string
-): Promise<{ deletedAccessToken?: string; errors?: string[] }> {
-  return medusaLogout(accessToken);
 }
 
 export async function medusaLogout(
   accessToken: string
 ): Promise<{ deletedAccessToken?: string; errors?: string[] }> {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('poma_active_customer');
+  }
   return { deletedAccessToken: accessToken };
 }

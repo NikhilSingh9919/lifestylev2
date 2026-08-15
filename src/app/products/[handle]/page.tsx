@@ -4,8 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Star, ShoppingBag, Plus, Minus, ChevronDown, ChevronUp, ArrowLeft } from 'lucide-react';
-import { useShopifyProduct } from '@/hooks/useShopifyProduct';
+import { useMedusaProduct } from '@/hooks/useMedusaProduct';
 import { useCart } from '@/context/CartContext';
+import { formatImageUrl } from '@/lib/medusa';
 import Image from 'next/image';
 
 // Custom dynamic titles matching the screenshot layout
@@ -13,16 +14,22 @@ const PRODUCT_DISPLAY_TITLES: Record<string, string> = {
   'pomabrush': 'pomabrush - sonic electric toothbrush',
   'pomabru': 'pomabru - portable espresso machine',
   'pomafloss': 'pomafloss - floating water flosser',
-  'pomaaccessoris': 'pomabrush heads - advanced cleaning pack',
+  'pomabrush-heads-advanced': 'pomabrush heads – advanced cleaning pack',
+  'pomabrush-heads-nylon-silicone': 'pomabrush heads – nylon-silicone hybrid pack',
+  'pomabrush-heads-pure-silicone': 'pomabrush heads – pure silicone sensitive pack',
+  'pomaaccessoris': 'pomabrush heads – pure silicone sensitive pack',
   'pomaclip': 'pomaclip - magnetic wall mount holder',
   'pomacloth': 'pomacloth - microfiber device cleaning cloth',
 };
 
-// Default colors associated with products for display if not defined in Shopify
+// Default colors associated with products for display if not defined in Medusa
 const PRODUCT_DEFAULT_COLORS: Record<string, string[]> = {
   'pomabrush': ['Charcoal Black', 'Cotton White'],
   'pomabru': ['Charcoal Black', 'Cotton White'],
   'pomafloss': ['Cotton White'],
+  'pomabrush-heads-advanced': ['Charcoal Black', 'Cotton White'],
+  'pomabrush-heads-nylon-silicone': ['Charcoal Black', 'Cotton White'],
+  'pomabrush-heads-pure-silicone': ['Charcoal Black', 'Cotton White'],
   'pomaaccessoris': ['Charcoal Black', 'Cotton White'],
   'pomaclip': ['Matte Silver'],
   'pomacloth': ['Charcoal Black'],
@@ -43,6 +50,18 @@ const PRODUCT_GALLERIES: Record<string, string[]> = {
     '/assets/figma/lineup-pomafloss.png',
     '/assets/figma/solutions-bg.png',
   ],
+  'pomabrush-heads-advanced': [
+    '/assets/figma/accessory-1.png',
+    '/assets/figma/lineup-pomaaccessories.png',
+  ],
+  'pomabrush-heads-nylon-silicone': [
+    '/assets/figma/lineup-pomaaccessories.png',
+    '/assets/figma/accessory-1.png',
+  ],
+  'pomabrush-heads-pure-silicone': [
+    '/assets/figma/accessory-1.png',
+    '/assets/figma/lineup-pomaaccessories.png',
+  ],
   'pomaaccessoris': [
     '/assets/figma/accessory-1.png',
     '/assets/figma/lineup-pomaaccessories.png',
@@ -52,8 +71,8 @@ const PRODUCT_GALLERIES: Record<string, string[]> = {
     '/assets/figma/accessory-3.png',
   ],
   'pomacloth': [
-    '/assets/figma/lineup-pomaaccessories.png',
     '/assets/figma/accessory-2.png',
+    '/assets/figma/lineup-pomaaccessories.png',
   ]
 };
 
@@ -114,6 +133,56 @@ const ACCORDION_DATA: Record<string, Array<{ title: string; content: string }>> 
     { 
       title: 'Poma Policies', 
       content: 'Standard free global delivery on all orders over £50. Includes our 2-year comprehensive manufacturer hardware warranty and a 30-day return policy.' 
+    }
+  ],
+  'pomabrush-heads-advanced': [
+    {
+      title: 'Key Features',
+      content: 'Replacement brush heads engineered for deeper surface cleaning and plaque removal with charcoal-infused micro-bristles.'
+    },
+    {
+      title: 'Poma Policies',
+      content: 'Free delivery on orders over £50. 30-day satisfaction guarantee.'
+    }
+  ],
+  'pomabrush-heads-nylon-silicone': [
+    {
+      title: 'Key Features',
+      content: 'Hybrid replacement heads combining charcoal-infused nylon inner bristles with outer protective silicone loops for balanced gum protection.'
+    },
+    {
+      title: 'Poma Policies',
+      content: 'Free delivery on orders over £50. 30-day satisfaction guarantee.'
+    }
+  ],
+  'pomabrush-heads-pure-silicone': [
+    {
+      title: 'Key Features',
+      content: 'Ultra-gentle, all-silicone replacement heads tailored specifically for sensitive teeth and delicate gums.'
+    },
+    {
+      title: 'Poma Policies',
+      content: 'Free delivery on orders over £50. 30-day satisfaction guarantee.'
+    }
+  ],
+  'pomaclip': [
+    {
+      title: 'Key Features',
+      content: 'Minimalist magnetic bathroom wall mount designed to dock your Pomabrush cleanly off counter surfaces.'
+    },
+    {
+      title: 'Poma Policies',
+      content: 'Free delivery on orders over £50.'
+    }
+  ],
+  'pomacloth': [
+    {
+      title: 'Key Features',
+      content: 'Premium soft microfiber cleaning cloth designed to wipe down and maintain Poma devices and travel cases.'
+    },
+    {
+      title: 'Poma Policies',
+      content: 'Free delivery on orders over £50.'
     }
   ]
 };
@@ -183,7 +252,7 @@ const METAFIELD_ACCORDION_TITLES: Record<string, string> = {
 export default function ProductDetailPage() {
   const { handle } = useParams();
   const router = useRouter();
-  const { product, loading, error } = useShopifyProduct(handle as string);
+  const { product, loading, error } = useMedusaProduct(handle as string);
   const { addToCart } = useCart();
 
   const [quantity, setQuantity] = useState(1);
@@ -225,7 +294,7 @@ export default function ProductDetailPage() {
   const getProductColors = () => {
     if (!product) return [];
 
-    // Filter real variants with specific colors from Shopify if present
+    // Filter real variants with specific colors from Medusa if present
     const realColors = product.variants.nodes.filter(v => {
       const hasColorOption = v.selectedOptions?.some(opt => 
         opt.name.toLowerCase() === 'color' || opt.name.toLowerCase() === 'colour'
@@ -290,12 +359,12 @@ export default function ProductDetailPage() {
         const defaultColorKey = cols[0].colorKey;
         setSelectedColorKey(defaultColorKey);
 
-        const storefrontImages = product.images?.nodes?.map(img => img.url) || [];
+        const storefrontImages = (product.images?.nodes?.map(img => formatImageUrl(img.url)) || []).filter(Boolean);
         const localGallery = PRODUCT_GALLERIES[product.handle];
         const productImages = storefrontImages.length > 0 ? storefrontImages : (localGallery && localGallery.length > 0 ? localGallery : []);
 
         const variant = product.variants.nodes.find(v => v.id === cols[0].id);
-        const variantImgUrl = variant?.image?.url;
+        const variantImgUrl = variant?.image?.url ? formatImageUrl(variant.image.url) : null;
         if (variantImgUrl) {
           const cleanUrl = (url: string) => url.split('?')[0];
           const idx = productImages.findIndex(img => cleanUrl(img) === cleanUrl(variantImgUrl));
@@ -319,7 +388,7 @@ export default function ProductDetailPage() {
   // Sync gallery view when selected variant color changes
   useEffect(() => {
     if (product && selectedColorKey) {
-      const storefrontImages = product.images?.nodes?.map(img => img.url) || [];
+      const storefrontImages = (product.images?.nodes?.map(img => formatImageUrl(img.url)) || []).filter(Boolean);
       const localGallery = PRODUCT_GALLERIES[product.handle];
       const productImages = storefrontImages.length > 0 ? storefrontImages : (localGallery && localGallery.length > 0 ? localGallery : []);
 
@@ -327,7 +396,7 @@ export default function ProductDetailPage() {
       const activeColorOpt = cols.find(c => c.colorKey === selectedColorKey);
       if (activeColorOpt) {
         const variant = product.variants.nodes.find(v => v.id === activeColorOpt.id);
-        const variantImgUrl = variant?.image?.url;
+        const variantImgUrl = variant?.image?.url ? formatImageUrl(variant.image.url) : null;
         if (variantImgUrl) {
           const cleanUrl = (url: string) => url.split('?')[0];
           const idx = productImages.findIndex(img => cleanUrl(img) === cleanUrl(variantImgUrl));
@@ -357,7 +426,7 @@ export default function ProductDetailPage() {
           </svg>
         </div>
         <h2 className="text-2xl font-bold font-sans">Failed to load product</h2>
-        <p className="text-neutral-500 mt-2 max-w-md font-sans">The product handle you are trying to reach does not exist or your Shopify configurations are misaligned.</p>
+        <p className="text-neutral-500 mt-2 max-w-md font-sans">The product handle you are trying to reach does not exist or your Medusa configurations are misaligned.</p>
         <button
           onClick={() => router.push('/')}
           className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-neutral-900 text-white text-sm font-semibold hover:bg-neutral-800 transition-colors cursor-pointer animate-pulse"
@@ -368,8 +437,8 @@ export default function ProductDetailPage() {
     );
   }
 
-  // Resolve product images - prefer live Shopify images over hardcoded local galleries
-  const storefrontImages = product.images?.nodes?.map(img => img.url) || [];
+  // Resolve product images - prefer live Medusa images over hardcoded local galleries
+  const storefrontImages = (product.images?.nodes?.map(img => formatImageUrl(img.url)) || []).filter(Boolean);
   const localGallery = PRODUCT_GALLERIES[product.handle];
   const productImages = storefrontImages.length > 0 ? storefrontImages : (localGallery && localGallery.length > 0 ? localGallery : ['/assets/products/placeholder.png']);
   const activeImageUrl = productImages[activeImageIndex] || productImages[0];
@@ -755,7 +824,7 @@ export default function ProductDetailPage() {
 function renderRichText(value: string): React.ReactNode {
   if (!value) return null;
 
-  // Check if it looks like Shopify Rich Text JSON
+  // Check if it looks like Rich Text JSON
   if (value.startsWith('{') && value.includes('"type"')) {
     try {
       const parsed = JSON.parse(value);

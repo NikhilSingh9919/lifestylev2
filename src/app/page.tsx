@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/context/CartContext';
-import { useShopifyProduct } from '@/hooks/useShopifyProduct';
+import { useMedusaProduct } from '@/hooks/useMedusaProduct';
+import { formatImageUrl } from '@/lib/medusa';
 import { ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -36,7 +37,7 @@ interface ProductCardProps {
 
 function ProductCard({ handle, imageOverride, titleOverride, descriptionOverride, priceOverride, hideDescription }: ProductCardProps) {
   const router = useRouter();
-  const { product, loading, error } = useShopifyProduct(handle);
+  const { product, loading, error } = useMedusaProduct(handle);
   const { addToCart } = useCart();
 
   const parseColorValue = (rawValue: string) => {
@@ -68,7 +69,7 @@ function ProductCard({ handle, imageOverride, titleOverride, descriptionOverride
     };
   };
 
-  // Dynamically extract colors from Shopify variants
+  // Dynamically extract colors from product variants
   const getProductColors = () => {
     if (!product) return [];
 
@@ -140,9 +141,9 @@ function ProductCard({ handle, imageOverride, titleOverride, descriptionOverride
 
   const price = priceOverride || primaryVariant?.price || product.priceRange.minVariantPrice.amount;
   
-  // Resolve product images from Shopify
-  const productImages = product.images.nodes.map(img => img.url);
-  const variantImg = primaryVariant?.image?.url;
+  // Resolve product images
+  const productImages = product.images.nodes.map(img => formatImageUrl(img.url));
+  const variantImg = primaryVariant?.image?.url ? formatImageUrl(primaryVariant.image.url) : null;
   const imageUrl = variantImg || productImages[0] || imageOverride || '/assets/products/placeholder.png';
 
   const title = product.title || titleOverride || '';
@@ -255,7 +256,7 @@ interface LineupItemProps {
 }
 
 function LineupItem({ prefix, suffix, handle, fallbackImg, scrollTarget }: LineupItemProps) {
-  const { product, loading } = useShopifyProduct(handle);
+  const { product, loading } = useMedusaProduct(handle);
   
   const storefrontImages = product?.images?.nodes?.map(img => img.url) || [];
   const imageUrl = storefrontImages[0] || fallbackImg;
@@ -299,9 +300,9 @@ function LineupItem({ prefix, suffix, handle, fallbackImg, scrollTarget }: Lineu
 function PomaHome() {
   const router = useRouter();
   const { addToCart } = useCart();
-  const { product: heroProduct } = useShopifyProduct('pomabrush');
-  const { product: bruProduct } = useShopifyProduct('pomabru');
-  const { product: flossProduct } = useShopifyProduct('pomafloss');
+  const { product: heroProduct } = useMedusaProduct('pomabrush');
+  const { product: bruProduct } = useMedusaProduct('pomabru');
+  const { product: flossProduct } = useMedusaProduct('pomafloss');
 
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
@@ -335,52 +336,46 @@ function PomaHome() {
   useEffect(() => {
     async function fetchAllProducts() {
       const mockData = [
-        { id: '1', title: 'Pomabrush Model 2.0', handle: 'pomabrush', productType: 'Brush' },
-        { id: '2', title: 'Pomafloss', handle: 'pomafloss', productType: 'Floss' },
-        { id: '3', title: 'Pomabru Espresso Maker', handle: 'pomabru', productType: 'Brew' },
-        { id: '4', title: 'Pomafloss Model 1.0', handle: 'pomafloss-model-1-0', productType: 'Floss' },
-        { id: '5', title: 'Pomabrush Heads - Silicone', handle: 'pomaaccessoris', productType: 'Accessories' },
-        { id: '6', title: 'Pomaclip', handle: 'pomaclip', productType: 'Accessories' },
-        { id: '7', title: 'Pomacloth', handle: 'pomacloth', productType: 'Accessories' }
+        { id: '1', title: 'Pomabrush', handle: 'pomabrush', productType: 'Oral Care' },
+        { id: '2', title: 'Pomafloss', handle: 'pomafloss', productType: 'Oral Care' },
+        { id: '3', title: 'Pomabru', handle: 'pomabru', productType: 'Lifestyle' },
+        { id: '4', title: 'Pomabrush Heads – Advanced', handle: 'pomabrush-heads-advanced', productType: 'Accessories' },
+        { id: '5', title: 'Pomabrush Heads – Nylon-Silicone', handle: 'pomabrush-heads-nylon-silicone', productType: 'Accessories' },
+        { id: '6', title: 'Pomabrush Heads – Pure Silicone', handle: 'pomabrush-heads-pure-silicone', productType: 'Accessories' },
+        { id: '7', title: 'Pomaclip', handle: 'pomaclip', productType: 'Accessories' },
+        { id: '8', title: 'Pomacloth', handle: 'pomacloth', productType: 'Accessories' }
       ];
 
       try {
         setLoadingProducts(true);
-        if (env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN.startsWith('mock_')) {
-          setAllProducts(mockData);
-          setLoadingProducts(false);
-          return;
-        }
-
-        const query = `
-          query getProducts {
-            products(first: 50) {
-              nodes {
-                id
-                title
-                handle
-                productType
-              }
-            }
-          }
-        `;
-
-        const res = await fetch(`https://${env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_DOMAIN}/api/2024-01/graphql.json`, {
-          method: 'POST',
+        const backendUrl = env.NEXT_PUBLIC_MEDUSA_BACKEND_URL.replace(/\/$/, '');
+        const res = await fetch(`${backendUrl}/store/products`, {
           headers: {
-            'Content-Type': 'application/json',
-            'X-Shopify-Storefront-Access-Token': env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN,
+            'x-publishable-api-key': env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || '',
           },
-          body: JSON.stringify({ query }),
         });
         
-        if (!res.ok) {
-          throw new Error(`Shopify API HTTP error: ${res.status}`);
-        }
+        if (res.ok) {
+          const json = await res.json();
+          if (json.products && json.products.length > 0) {
+            // Filter out legacy Medusa starter products (shirts, pants, shorts, etc.)
+            const pomaProducts = json.products
+              .filter((p: any) => p.handle && (p.handle.startsWith('poma') || p.handle === 'pomaaccessoris'))
+              .map((p: any) => ({
+                id: p.id,
+                title: p.title,
+                handle: p.handle,
+                productType: p.type?.value || (p.handle.includes('head') || p.handle.includes('clip') || p.handle.includes('cloth') || p.handle === 'pomaaccessoris' ? 'Accessories' : 'Oral Care'),
+              }));
 
-        const json = await res.json();
-        if (json.data?.products?.nodes && json.data.products.nodes.length > 0) {
-          setAllProducts(json.data.products.nodes);
+            if (pomaProducts.length > 0) {
+              setAllProducts(pomaProducts);
+            } else {
+              setAllProducts(mockData);
+            }
+          } else {
+            setAllProducts(mockData);
+          }
         } else {
           setAllProducts(mockData);
         }
@@ -395,8 +390,14 @@ function PomaHome() {
     fetchAllProducts();
   }, []);
 
-  const mainProducts = allProducts.filter(p => p.productType?.toLowerCase() !== 'accessories');
-  const accessoryProducts = allProducts.filter(p => p.productType?.toLowerCase() === 'accessories');
+  const isAccessory = (handle: string, productType?: string) => {
+    const h = handle.toLowerCase();
+    const t = (productType || '').toLowerCase();
+    return t === 'accessories' || h.includes('head') || h.includes('clip') || h.includes('cloth') || h === 'pomaaccessoris';
+  };
+
+  const mainProducts = allProducts.filter(p => !isAccessory(p.handle, p.productType));
+  const accessoryProducts = allProducts.filter(p => isAccessory(p.handle, p.productType));
 
   const [heroActiveIndex, setHeroActiveIndex] = useState(0);
   const [isHeroHovered, setIsHeroHovered] = useState(false);

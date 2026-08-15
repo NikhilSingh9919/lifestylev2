@@ -51,7 +51,7 @@ function RegisterFormContent() {
       setErrors(res.errors || ['An error occurred during account creation.']);
       setIsSubmitting(false);
     } else {
-      router.push(redirect);
+      window.location.href = redirect;
     }
   };
 

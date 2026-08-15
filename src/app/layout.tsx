@@ -16,7 +16,7 @@ const rethinkSans = Rethink_Sans({
 
 export const metadata: Metadata = {
   title: "Poma Lifestyle | Premium Headless Storefront",
-  description: "High-performance sonic toothbrushes and floating dispensers connected directly to Shopify.",
+  description: "High-performance sonic toothbrushes and floating dispensers powered by Medusa.",
 };
 
 export default function RootLayout({

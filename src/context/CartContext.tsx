@@ -88,7 +88,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         quantity: item.quantity,
       }));
       const token = typeof window !== 'undefined' 
-        ? localStorage.getItem('medusa_customer_access_token') || localStorage.getItem('shopify_customer_access_token') || undefined 
+        ? localStorage.getItem('medusa_customer_access_token') || undefined 
         : undefined;
       const checkoutUrl = await generateCheckoutLink(items, token);
       window.location.href = checkoutUrl;

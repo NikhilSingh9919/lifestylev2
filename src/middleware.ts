@@ -7,15 +7,15 @@ export function middleware(request: NextRequest) {
   // Rigid Content Security Policy
   const cspHeader = `
     default-src 'self';
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.shopify.com;
+    script-src 'self' 'unsafe-inline' 'unsafe-eval';
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    img-src 'self' data: blob: https://cdn.shopify.com https://*.myshopify.com;
+    img-src 'self' data: blob: http://localhost:9000;
     font-src 'self' https://fonts.gstatic.com;
-    connect-src 'self' ws://localhost:* wss://localhost:* https://*.myshopify.com https://pomalifestyle.myshopify.com;
+    connect-src 'self' ws://localhost:* wss://localhost:* http://localhost:9000;
     frame-src 'none';
     object-src 'none';
     base-uri 'self';
-    form-action 'self' https://*.myshopify.com;
+    form-action 'self';
     frame-ancestors 'none';
     block-all-mixed-content;
     upgrade-insecure-requests;

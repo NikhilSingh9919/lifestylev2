@@ -43,7 +43,7 @@ function LoginFormContent() {
       setError(res.error || 'Invalid credentials.');
       setIsSubmitting(false);
     } else {
-      router.push(redirect);
+      window.location.href = redirect;
     }
   };
 
@@ -112,7 +112,7 @@ function LoginFormContent() {
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    alert('Password recovery is managed by Shopify. A reset link would be sent in production.');
+                    alert('Password recovery is managed by Medusa. A reset link would be sent in production.');
                   }}
                   className="text-xs text-neutral-400 hover:text-white transition-colors duration-200 font-medium"
                 >
