@@ -37,6 +37,7 @@ export interface MedusaProduct {
     nodes: ProductVariant[];
   };
   tags?: string[];
+  metadata?: Record<string, any>;
   metafields?: Array<{
     key: string;
     value: string;
@@ -421,6 +422,14 @@ export function getMockProduct(handle: string): MedusaProduct | null {
   };
 }
 
+const HANDLE_ALIASES: Record<string, string> = {
+  'pomabru': 'pomabru-portable-espresso-machine',
+  'pomabrush': 'pomabrush-model-2-0',
+  'pomafloss': 'pomafloss-model-1-0',
+  'pomaclip': 'pomaclip-magnetic-toothbrush-holder',
+  'pomacloth': 'pomacloth-microfibre-cleaning-cloth',
+};
+
 export async function fetchMedusaProductByHandle(handle: string): Promise<MedusaProduct | null> {
   const backendUrl = env.NEXT_PUBLIC_MEDUSA_BACKEND_URL.replace(/\/$/, '');
   const headers: Record<string, string> = {
@@ -430,24 +439,41 @@ export async function fetchMedusaProductByHandle(handle: string): Promise<Medusa
     headers['x-publishable-api-key'] = env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY;
   }
 
+  const targetHandle = HANDLE_ALIASES[handle.toLowerCase()] || handle;
+
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-    // Try Medusa v2 /store/products endpoint with handle filter
-    const res = await fetch(`${backendUrl}/store/products?handle=${encodeURIComponent(handle)}`, {
+    // Try Medusa v2 /store/products endpoint with handle filter and metadata fields
+    let res = await fetch(`${backendUrl}/store/products?handle=${encodeURIComponent(targetHandle)}&fields=+metadata,*images,*variants`, {
       headers,
       signal: controller.signal,
     });
-    clearTimeout(timeoutId);
 
     if (res.ok) {
       const data = await res.json();
-      const product = data.products?.[0];
+      let product = data.products?.[0];
+
+      // If alias handle returned no product, retry with exact original handle
+      if (!product && targetHandle !== handle) {
+        const retryRes = await fetch(`${backendUrl}/store/products?handle=${encodeURIComponent(handle)}&fields=+metadata,*images,*variants`, {
+          headers,
+          signal: controller.signal,
+        });
+        if (retryRes.ok) {
+          const retryData = await retryRes.json();
+          product = retryData.products?.[0];
+        }
+      }
+
+      clearTimeout(timeoutId);
+
       if (product) {
         return adaptMedusaProduct(product);
       }
     }
+    clearTimeout(timeoutId);
   } catch (err) {
     console.warn(`Medusa API offline at ${backendUrl}, using fallback product for '${handle}':`, err);
   }
@@ -508,6 +534,7 @@ function adaptMedusaProduct(medusaProd: any): MedusaProduct {
     images: { nodes: images },
     variants: { nodes: variants },
     tags: medusaProd.tags?.map((t: any) => t.value || t),
+    metadata: medusaProd.metadata || {},
   };
 }
 

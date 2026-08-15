@@ -76,7 +76,75 @@ const PRODUCT_GALLERIES: Record<string, string[]> = {
   ]
 };
 
-// Option round circle color mapping helper
+// Option round circle color mapping helper & rich HEX dictionary
+const COLOR_HEX_MAP: Record<string, string> = {
+  // Greens
+  'forest green': '#2D5A27',
+  'forestgreen': '#2D5A27',
+  'forest': '#2D5A27',
+  'emerald green': '#046A38',
+  'emerald': '#046A38',
+  'sage green': '#8A9A86',
+  'sage': '#8A9A86',
+  'olive green': '#556B2F',
+  'olive': '#556B2F',
+  'mint green': '#98FF98',
+  'mint': '#98FF98',
+  'green': '#4B6B50',
+
+  // Blacks & Greys
+  'charcoal black': '#1A1A1A',
+  'charcoal': '#2B2B2B',
+  'midnight black': '#0D0D0D',
+  'matte black': '#1C1C1C',
+  'black': '#0A0A0A',
+  'space grey': '#535459',
+  'space gray': '#535459',
+  'slate grey': '#708090',
+  'slate gray': '#708090',
+  'slate': '#708090',
+  'matte silver': '#C0C0C0',
+  'silver': '#C0C0C0',
+  'carbon': '#2E2E2E',
+  'grey': '#808080',
+  'gray': '#808080',
+
+  // Whites & Creams
+  'cotton white': '#FFFFFF',
+  'alpine white': '#F8F9FA',
+  'white': '#FFFFFF',
+  'off white': '#F5F5F0',
+  'cream': '#FFFDD0',
+  'sand': '#C2B280',
+  'beige': '#F5F5DC',
+
+  // Blues
+  'navy blue': '#000080',
+  'navy': '#000080',
+  'ocean blue': '#1D4E89',
+  'sky blue': '#87CEEB',
+  'midnight blue': '#191970',
+  'blue': '#2E4A62',
+  'cobalt': '#0047AB',
+  'teal': '#008080',
+
+  // Golds, Reds, Pinks, Purples, Oranges
+  'satin gold': '#E6C15C',
+  'rose gold': '#B76E79',
+  'gold': '#E6C15C',
+  'bronze': '#CD7F32',
+  'copper': '#B87333',
+  'coral': '#FF7F50',
+  'pink': '#FFC0CB',
+  'rose': '#FF007F',
+  'red': '#C8102E',
+  'burgundy': '#800020',
+  'purple': '#800080',
+  'lavender': '#E6E6FA',
+  'yellow': '#FFD700',
+  'orange': '#FFA500',
+};
+
 const COLOR_MAP: Record<string, string> = {
   'charcoal black': 'bg-neutral-900 ring-neutral-400',
   'cotton white': 'bg-white border-neutral-200 ring-neutral-400',
@@ -89,6 +157,8 @@ const COLOR_MAP: Record<string, string> = {
   'charcoal': 'bg-neutral-800 ring-neutral-400',
   'green': 'bg-[#4B6B50] ring-[#374F3B]',
   'blue': 'bg-[#2E4A62] ring-[#203344]',
+  'forest green': 'bg-[#2D5A27] ring-[#1E3E1A]',
+  'forestgreen': 'bg-[#2D5A27] ring-[#1E3E1A]',
 };
 
 // Accordion detailed data
@@ -187,58 +257,6 @@ const ACCORDION_DATA: Record<string, Array<{ title: string; content: string }>> 
   ]
 };
 
-// Box items data structures
-interface BoxItem {
-  title: string;
-  desc: string;
-  img: string;
-}
-
-const INSIDE_THE_BOX_DATA: Record<string, BoxItem[]> = {
-  'pomabru': [
-    { title: 'pomabru', desc: 'Designed for those who refuse to compromise on quality, pomabru brings the café experience to wherever you are.', img: '/pomabru/pomabru.png' },
-    { title: 'Scoop', desc: 'A handy scoop that perfectly measures the ideal amount of ground coffee for one delicious espresso, ensuring consistency and flavour in every cup.', img: '/pomabru/Scoop.png' },
-    { title: 'water-resistant carry case', desc: 'The protective case keeps your pomabru safe and ready for adventure.', img: '/pomabru/water-resistant carry case.png' },
-    { title: 'usb-c fast charging cable', desc: 'Universal, reliable and quick to recharge your pomabru. You can even use your pomabru as a source to charge a different device.', img: '/pomabru/usb-c fast charging cable  .png' },
-  ],
-  'pomabrush': [
-    { title: 'pomabrush', desc: 'The flagship electric toothbrush featuring a medical-grade silicone handle and sonic motor.', img: '/assets/figma/lineup-pomabrush.png' },
-    { title: 'charging travel case', desc: 'Compact travel case that charges your PomaBrush on the go.', img: '/assets/figma/hero-featured.png' },
-    { title: 'replacement head', desc: 'One premium hybrid carbon-silicone replacement head included.', img: '/assets/figma/accessory-1.png' },
-    { title: 'usb-c cable', desc: 'Universal fast charging cable compatible with travel case.', img: '/assets/figma/accessory-2.png' },
-  ],
-  'pomafloss': [
-    { title: 'pomafloss', desc: 'The floating flosser dispenser with magnetic wall-mount.', img: '/assets/figma/lineup-pomafloss.png' },
-    { title: 'magnetic holder', desc: 'Sleek wall mount with adhesive back for universal installation.', img: '/assets/figma/accessory-4.png' },
-    { title: 'expanding floss spool', desc: 'One organic, expandable charcoal-infused dental floss spool.', img: '/assets/figma/lineup-pomaaccessories.png' },
-    { title: 'microfiber pouch', desc: 'Travel pouch to protect the flosser when packing.', img: '/assets/figma/accessory-3.png' },
-  ],
-};
-
-// Compatible products data structures
-interface CompatibleItem {
-  title: string;
-  desc: string;
-  img: string;
-}
-
-const COMPATIBLE_DATA: Record<string, CompatibleItem[]> = {
-  'pomabru': [
-    { title: 'Nespresso®-style pods', desc: 'Designed for those who refuse to compromise on quality, pomabru brings the café experience to wherever you are.', img: '/pomabru/Nespresso©-style pods.png' },
-    { title: 'Dolce Gusto®-style pods', desc: 'Designed for those who refuse to compromise on quality, pomabru brings the café experience to wherever you are.', img: '/pomabru/Dulce Gusto©-style pods.png' },
-    { title: 'ground coffee', desc: 'Designed for those who refuse to compromise on quality, pomabru brings the café experience to wherever you are.', img: '/pomabru/ground coffee.png' },
-  ],
-  'pomabrush': [
-    { title: 'Carbon replacement heads', desc: 'Carbon-infused nylon bristles designed for plaque removal.', img: '/assets/figma/accessory-1.png' },
-    { title: 'Hybrid silicone heads', desc: 'Combines carbon nylon bristles with soft outer silicone loops.', img: '/assets/figma/accessory-2.png' },
-    { title: 'Pure silicone heads', desc: 'Gentle, full-silicone head perfect for sensitive gums.', img: '/assets/figma/accessory-3.png' },
-  ],
-  'pomafloss': [
-    { title: 'Expanding clean floss refill', desc: 'Organic expanding charcoal dental floss spools.', img: '/assets/figma/lineup-pomaaccessories.png' },
-    { title: 'Wall mount adhesive strip', desc: 'Spare 3M adhesive strip for relocating wall mounts.', img: '/assets/figma/accessory-4.png' },
-  ],
-};
-
 const METAFIELD_ACCORDION_TITLES: Record<string, string> = {
   'product_description': 'Product Details',
   'additional_information': 'Additional Information',
@@ -265,13 +283,13 @@ export default function ProductDetailPage() {
     let name = rawValue.trim();
     let hex: string | undefined;
 
-    // Pattern 1: Name (#Hex) or Name (Hex)
+    // Pattern 1: Name (#Hex) or Name (Hex) e.g. "Forest Green (#2D5A27)"
     const parenMatch = name.match(/^([^(]+)\((#?[0-9a-fA-F]{6}|#?[0-9a-fA-F]{3})\)/);
     if (parenMatch) {
       name = parenMatch[1].trim();
       hex = parenMatch[2].trim();
     } else {
-      // Pattern 2: Name | Hex or Name - Hex
+      // Pattern 2: Name | Hex or Name - Hex e.g. "Forest Green | #2D5A27"
       const separatorMatch = name.match(/^([^|-]+)[|-](#?[0-9a-fA-F]{6}|#?[0-9a-fA-F]{3})$/);
       if (separatorMatch) {
         name = separatorMatch[1].trim();
@@ -283,10 +301,27 @@ export default function ProductDetailPage() {
       hex = `#${hex}`;
     }
 
+    const keyLower = name.toLowerCase();
+
+    // If no explicit hex in title/option, look up in COLOR_HEX_MAP
+    if (!hex) {
+      if (COLOR_HEX_MAP[keyLower]) {
+        hex = COLOR_HEX_MAP[keyLower];
+      } else {
+        // Check partial substring match e.g. "forest", "green", "blue"
+        for (const [k, v] of Object.entries(COLOR_HEX_MAP)) {
+          if (keyLower.includes(k)) {
+            hex = v;
+            break;
+          }
+        }
+      }
+    }
+
     return {
       title: name,
-      colorKey: name.toLowerCase(),
-      hexCode: hex
+      colorKey: keyLower,
+      hexCode: hex || '#4B6B50', // fallback color
     };
   };
 
@@ -302,15 +337,7 @@ export default function ProductDetailPage() {
       if (hasColorOption) return true;
 
       const titleLower = v.title.toLowerCase();
-      return titleLower !== 'default title' && (
-        COLOR_MAP[titleLower] !== undefined ||
-        titleLower.includes('black') ||
-        titleLower.includes('white') ||
-        titleLower.includes('gold') ||
-        titleLower.includes('silver') ||
-        titleLower.includes('green') ||
-        titleLower.includes('blue')
-      );
+      return titleLower !== 'default title';
     });
 
     if (realColors.length > 0) {
@@ -478,36 +505,74 @@ export default function ProductDetailPage() {
     setActiveAccordion(prev => prev === title ? null : title);
   };
 
-  const getMetafieldValue = (key: string): string | null => {
-    if (!product?.metafields) return null;
-    const mf = product.metafields.find(m => m && m.key === key);
-    return mf ? mf.value : null;
+  const formatAccordionTitle = (rawKey: string): string => {
+    if (METAFIELD_ACCORDION_TITLES[rawKey.toLowerCase()]) {
+      return METAFIELD_ACCORDION_TITLES[rawKey.toLowerCase()];
+    }
+    if (rawKey.includes(' ') || rawKey !== rawKey.toLowerCase()) {
+      return rawKey;
+    }
+    return rawKey
+      .replace(/[-_]/g, ' ')
+      .split(' ')
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
   };
 
   const getAccordions = () => {
     if (!product) return [];
 
     const list: { title: string; content: string }[] = [];
-    const keys = [
-      'product_description',
-      'additional_information',
-      'key_features',
-      'inside_the_box',
-      'warranty',
-      'shipping',
-      'poma_policies'
-    ];
-    
-    keys.forEach(key => {
-      const val = getMetafieldValue(key);
-      if (val && val.trim().length > 0) {
-        list.push({
-          title: METAFIELD_ACCORDION_TITLES[key],
-          content: val.trim()
-        });
-      }
-    });
 
+    // 1. Dynamically convert ALL key-value pairs from Medusa Metadata into Accordions
+    if (product.metadata && typeof product.metadata === 'object') {
+      Object.entries(product.metadata).forEach(([key, value]) => {
+        if (!value) return;
+
+        // Skip internal non-accordion structural keys if they contain arrays of objects
+        if (key === 'whats_in_the_box' || key === 'custom_sections' || key === 'feature_sections') {
+          return;
+        }
+
+        let contentString = '';
+        if (typeof value === 'string') {
+          contentString = value.trim();
+        } else if (typeof value === 'number' || typeof value === 'boolean') {
+          contentString = String(value);
+        } else if (Array.isArray(value)) {
+          if (value.every(v => typeof v === 'string')) {
+            contentString = value.map(v => `• ${v}`).join('\n');
+          }
+        }
+
+        if (contentString.length > 0) {
+          const title = formatAccordionTitle(key);
+          if (!list.some(item => item.title.toLowerCase() === title.toLowerCase())) {
+            list.push({
+              title,
+              content: contentString,
+            });
+          }
+        }
+      });
+    }
+
+    // 2. Also check product.metafields for any additional items
+    if (product.metafields && Array.isArray(product.metafields)) {
+      product.metafields.forEach(mf => {
+        if (mf && mf.key && mf.value && mf.value.trim().length > 0) {
+          const title = formatAccordionTitle(mf.key);
+          if (!list.some(item => item.title.toLowerCase() === title.toLowerCase())) {
+            list.push({
+              title,
+              content: mf.value.trim(),
+            });
+          }
+        }
+      });
+    }
+
+    // 3. Fallback to hardcoded ACCORDION_DATA if no metadata was provided for this product
     if (list.length === 0) {
       const localData = ACCORDION_DATA[product.handle];
       if (localData) {
@@ -533,19 +598,6 @@ export default function ProductDetailPage() {
   };
 
   const accordions = getAccordions();
-
-  // Resolve Inside the Box items (restored to static mock data)
-  const resolveInsideTheBox = (): BoxItem[] => {
-    return INSIDE_THE_BOX_DATA[product.handle] || [];
-  };
-
-  // Resolve Compatible items (restored to static mock data)
-  const resolveCompatible = (): CompatibleItem[] => {
-    return COMPATIBLE_DATA[product.handle] || [];
-  };
-
-  const insideTheBoxItems = resolveInsideTheBox();
-  const compatibleItems = resolveCompatible();
 
   return (
     <div className="min-h-screen bg-white text-neutral-900 font-sans selection:bg-neutral-900 selection:text-white pt-12 pb-20">
@@ -764,82 +816,136 @@ export default function ProductDetailPage() {
 
       </div>
 
-      {/* Dynamic bottom details grid section */}
-      {insideTheBoxItems.length > 0 && product?.handle !== 'pomafloss' && (
-        <section className="bg-[#f5f5f5] py-12 md:py-20 mt-12 md:mt-20">
-          <div className="px-5 md:px-[80px]">
-            <h2 className="text-2xl md:text-3xl font-black text-neutral-950 mb-8 md:mb-10 lowercase tracking-tight">
-              what&apos;s inside the box
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {insideTheBoxItems.map((item, idx) => (
-                <div key={idx} className="flex flex-col group">
-                  <div className="relative aspect-[3/4] w-full rounded-2xl bg-white border border-neutral-100 overflow-hidden mb-4">
-                    <Image
-                      src={item.img}
-                      alt={item.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                  <h3 className="text-[16px] font-bold text-neutral-900 lowercase mb-2">{item.title}</h3>
-                  <p className="text-[16px] text-neutral-500 font-sans leading-relaxed font-light">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      <div className="px-5 md:px-[80px]">
-        {compatibleItems.length > 0 && product?.handle !== 'pomafloss' && (
-          <section className="mt-12 md:mt-20 pt-12 md:pt-16 border-t border-neutral-100">
-            <h2 className="text-2xl md:text-3xl font-black text-neutral-950 mb-8 md:mb-10 lowercase tracking-tight">
-              compatible with
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-              {compatibleItems.map((item, idx) => (
-                <div key={idx} className="flex flex-col group">
-                  <div className="relative aspect-[4/3] w-full rounded-2xl bg-neutral-50 border border-neutral-100 overflow-hidden mb-4">
-                    <Image
-                      src={item.img}
-                      alt={item.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                  <h3 className="text-[16px] font-bold text-neutral-900 lowercase mb-2">{item.title}</h3>
-                  <p className="text-[16px] text-neutral-500 font-sans leading-relaxed font-light">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-      </div>
     </div>
   );
 }
 
-function renderRichText(value: string): React.ReactNode {
-  if (!value) return null;
+function renderBulletItem(text: string, idx: number) {
+  const clean = text.trim();
+  if (!clean) return null;
 
-  // Check if it looks like Rich Text JSON
+  // Check if bullet item is formatted as "Title: Description"
+  const colonMatch = clean.match(/^([^:]+):(.*)$/);
+  if (colonMatch) {
+    const title = colonMatch[1].trim();
+    const desc = colonMatch[2].trim();
+    return (
+      <li key={idx} className="text-[16px] text-neutral-500 font-sans leading-relaxed font-light">
+        <strong className="font-semibold text-neutral-900">{title}:</strong> {desc}
+      </li>
+    );
+  }
+
+  return (
+    <li key={idx} className="text-[16px] text-neutral-500 font-sans leading-relaxed font-light">
+      {clean}
+    </li>
+  );
+}
+
+function parseListItems(value: string): string[] | null {
+  if (!value || typeof value !== 'string') return null;
+
+  // 1. Check JSON Array string e.g. ["item 1", "item 2"]
+  if (value.trim().startsWith('[') && value.trim().endsWith(']')) {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed) && parsed.every(i => typeof i === 'string')) {
+        return parsed.map(i => i.trim()).filter(Boolean);
+      }
+    } catch {}
+  }
+
+  // 2. Check Bullet symbol •
+  if (value.includes('•')) {
+    const parts = value.split('•').map(p => p.trim()).filter(Boolean);
+    if (parts.length > 1) return parts;
+  }
+
+  // 3. Check Pipe symbol |
+  if (value.includes('|') && !value.includes('http://') && !value.includes('https://')) {
+    const parts = value.split('|').map(p => p.trim()).filter(Boolean);
+    if (parts.length > 1) return parts;
+  }
+
+  // 4. Check Semicolons ; (sanitizing HTML entities first)
+  if (value.includes(';') && !value.includes('<')) {
+    const sanitized = value
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&amp;/gi, '&')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/gi, "'");
+
+    const parts = sanitized
+      .split(/;\s*/)
+      .map(p => p.trim())
+      .filter(p => p.length > 0 && !p.startsWith('&'));
+
+    if (parts.length > 1) return parts;
+  }
+
+  // 5. Check Multiline text with explicit bullet prefixes (•, -, *)
+  if (value.includes('\n')) {
+    const lines = value.split('\n').map(l => l.trim()).filter(Boolean);
+    const hasBullets = lines.some(l => l.startsWith('•') || l.startsWith('- ') || l.startsWith('* '));
+    if (hasBullets && lines.length > 1) {
+      return lines.map(l => l.replace(/^[•\-\*]\s*/, ''));
+    }
+  }
+
+  return null;
+}
+
+function renderRichText(value: string): React.ReactNode {
+  if (!value || typeof value !== 'string') return null;
+
+  // 1. Check if string contains HTML tags (e.g. <p>, <ul>, <li>, <br>, <strong>)
+  if (/<[a-z][\s\S]*>/i.test(value)) {
+    return (
+      <div 
+        className="text-[16px] text-neutral-500 font-sans leading-relaxed font-light [&_p]:text-[16px] [&_p]:text-neutral-500 [&_p]:font-sans [&_p]:font-light [&_p]:leading-relaxed [&_p]:mb-3 [&_p:last-child]:mb-0 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_li]:text-[16px] [&_li]:text-neutral-500 [&_li]:font-sans [&_li]:font-light [&_li]:leading-relaxed [&_li]:my-1 [&_strong]:font-semibold [&_strong]:text-neutral-900 [&_h3]:text-[18px] [&_h3]:font-bold [&_h3]:text-neutral-900 [&_h3]:mb-2"
+        dangerouslySetInnerHTML={{ __html: value }}
+      />
+    );
+  }
+
+  // 2. Rich text Lexical / Draft JSON object check
   if (value.startsWith('{') && value.includes('"type"')) {
     try {
       const parsed = JSON.parse(value);
       if (parsed.type === 'root' && Array.isArray(parsed.children)) {
         return renderNodes(parsed.children);
       }
-    } catch (e) {
-      // Fallback to raw string if parsing fails
-      return value;
-    }
+    } catch (e) {}
   }
 
-  // If it's a simple string with newlines, replace them with line breaks
+  // 3. Delimiter bullet list check (JSON arrays, •, |, ;)
+  const listItems = parseListItems(value);
+  if (listItems && listItems.length > 0) {
+    return (
+      <ul className="space-y-2 list-disc pl-5 my-2">
+        {listItems.map((item, idx) => renderBulletItem(item, idx))}
+      </ul>
+    );
+  }
+
+  // 4. Multiple paragraphs (separated by double newlines or single newlines without bullet symbols)
+  const paragraphs = value.split(/\n+/).map(p => p.trim()).filter(Boolean);
+  if (paragraphs.length > 1) {
+    return (
+      <div className="space-y-3">
+        {paragraphs.map((p, idx) => (
+          <p key={idx} className="text-[16px] text-neutral-500 font-sans leading-relaxed font-light">
+            {p}
+          </p>
+        ))}
+      </div>
+    );
+  }
+
+  // 5. Single paragraph fallback
   return (
-    <span className="whitespace-pre-wrap">{value}</span>
+    <span className="text-[16px] text-neutral-500 font-sans leading-relaxed font-light whitespace-pre-wrap">{value}</span>
   );
 }
 

@@ -11,6 +11,74 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { env } from '@/config/env';
 
+const COLOR_HEX_MAP: Record<string, string> = {
+  // Greens
+  'forest green': '#2D5A27',
+  'forestgreen': '#2D5A27',
+  'forest': '#2D5A27',
+  'emerald green': '#046A38',
+  'emerald': '#046A38',
+  'sage green': '#8A9A86',
+  'sage': '#8A9A86',
+  'olive green': '#556B2F',
+  'olive': '#556B2F',
+  'mint green': '#98FF98',
+  'mint': '#98FF98',
+  'green': '#4B6B50',
+
+  // Blacks & Greys
+  'charcoal black': '#1A1A1A',
+  'charcoal': '#2B2B2B',
+  'midnight black': '#0D0D0D',
+  'matte black': '#1C1C1C',
+  'black': '#0A0A0A',
+  'space grey': '#535459',
+  'space gray': '#535459',
+  'slate grey': '#708090',
+  'slate gray': '#708090',
+  'slate': '#708090',
+  'matte silver': '#C0C0C0',
+  'silver': '#C0C0C0',
+  'carbon': '#2E2E2E',
+  'grey': '#808080',
+  'gray': '#808080',
+
+  // Whites & Creams
+  'cotton white': '#FFFFFF',
+  'alpine white': '#F8F9FA',
+  'white': '#FFFFFF',
+  'off white': '#F5F5F0',
+  'cream': '#FFFDD0',
+  'sand': '#C2B280',
+  'beige': '#F5F5DC',
+
+  // Blues
+  'navy blue': '#000080',
+  'navy': '#000080',
+  'ocean blue': '#1D4E89',
+  'sky blue': '#87CEEB',
+  'midnight blue': '#191970',
+  'blue': '#2E4A62',
+  'cobalt': '#0047AB',
+  'teal': '#008080',
+
+  // Golds, Reds, Pinks, Purples, Oranges
+  'satin gold': '#E6C15C',
+  'rose gold': '#B76E79',
+  'gold': '#E6C15C',
+  'bronze': '#CD7F32',
+  'copper': '#B87333',
+  'coral': '#FF7F50',
+  'pink': '#FFC0CB',
+  'rose': '#FF007F',
+  'red': '#C8102E',
+  'burgundy': '#800020',
+  'purple': '#800080',
+  'lavender': '#E6E6FA',
+  'yellow': '#FFD700',
+  'orange': '#FFA500',
+};
+
 const COLOR_MAP: Record<string, string> = {
   'charcoal black': 'bg-neutral-900 ring-neutral-400',
   'cotton white': 'bg-white border-neutral-200 ring-neutral-400',
@@ -23,6 +91,8 @@ const COLOR_MAP: Record<string, string> = {
   'charcoal': 'bg-neutral-800 ring-neutral-400',
   'green': 'bg-[#4B6B50] ring-[#374F3B]',
   'blue': 'bg-[#2E4A62] ring-[#203344]',
+  'forest green': 'bg-[#2D5A27] ring-[#1E3E1A]',
+  'forestgreen': 'bg-[#2D5A27] ring-[#1E3E1A]',
 };
 
 // Inline Product Card for bestsellers and accessories
@@ -44,13 +114,13 @@ function ProductCard({ handle, imageOverride, titleOverride, descriptionOverride
     let name = rawValue.trim();
     let hex: string | undefined;
 
-    // Pattern 1: Name (#Hex) or Name (Hex)
+    // Pattern 1: Name (#Hex) or Name (Hex) e.g. "Forest Green (#2D5A27)"
     const parenMatch = name.match(/^([^(]+)\((#?[0-9a-fA-F]{6}|#?[0-9a-fA-F]{3})\)/);
     if (parenMatch) {
       name = parenMatch[1].trim();
       hex = parenMatch[2].trim();
     } else {
-      // Pattern 2: Name | Hex or Name - Hex
+      // Pattern 2: Name | Hex or Name - Hex e.g. "Forest Green | #2D5A27"
       const separatorMatch = name.match(/^([^|-]+)[|-](#?[0-9a-fA-F]{6}|#?[0-9a-fA-F]{3})$/);
       if (separatorMatch) {
         name = separatorMatch[1].trim();
@@ -62,10 +132,25 @@ function ProductCard({ handle, imageOverride, titleOverride, descriptionOverride
       hex = `#${hex}`;
     }
 
+    const keyLower = name.toLowerCase();
+
+    if (!hex) {
+      if (COLOR_HEX_MAP[keyLower]) {
+        hex = COLOR_HEX_MAP[keyLower];
+      } else {
+        for (const [k, v] of Object.entries(COLOR_HEX_MAP)) {
+          if (keyLower.includes(k)) {
+            hex = v;
+            break;
+          }
+        }
+      }
+    }
+
     return {
       title: name,
-      colorKey: name.toLowerCase(),
-      hexCode: hex
+      colorKey: keyLower,
+      hexCode: hex || '#4B6B50',
     };
   };
 
@@ -80,15 +165,7 @@ function ProductCard({ handle, imageOverride, titleOverride, descriptionOverride
       if (hasColorOption) return true;
 
       const titleLower = v.title.toLowerCase();
-      return titleLower !== 'default title' && (
-        COLOR_MAP[titleLower] !== undefined ||
-        titleLower.includes('black') ||
-        titleLower.includes('white') ||
-        titleLower.includes('gold') ||
-        titleLower.includes('silver') ||
-        titleLower.includes('green') ||
-        titleLower.includes('blue')
-      );
+      return titleLower !== 'default title';
     });
 
     if (realColors.length > 0) {
