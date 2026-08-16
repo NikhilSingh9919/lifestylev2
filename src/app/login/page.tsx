@@ -17,7 +17,8 @@ function LoginFormContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // If already logged in, redirect
@@ -29,18 +30,32 @@ function LoginFormContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setEmailError(null);
+    setPasswordError(null);
     setIsSubmitting(true);
 
-    if (!email || !password) {
-      setError('Please fill in all fields.');
+    let hasValidationError = false;
+    if (!email) {
+      setEmailError('email does not exist.');
+      hasValidationError = true;
+    }
+    if (!password) {
+      setPasswordError('password is wrong.');
+      hasValidationError = true;
+    }
+
+    if (hasValidationError) {
       setIsSubmitting(false);
       return;
     }
 
     const res = await login(email, password);
     if (!res.success) {
-      setError(res.error || 'Invalid credentials.');
+      if (res.errorType === 'EMAIL' || res.error?.toLowerCase().includes('email') || res.error?.toLowerCase().includes('exist')) {
+        setEmailError('email does not exist.');
+      } else {
+        setPasswordError('password is wrong.');
+      }
       setIsSubmitting(false);
     } else {
       window.location.href = redirect;
@@ -82,18 +97,6 @@ function LoginFormContent() {
             </h1>
           </div>
 
-          {/* Error Alert Box */}
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="w-full mb-4 p-3 rounded-xl bg-red-950/40 border border-red-500/30 text-red-400 text-xs font-semibold flex items-start gap-2.5"
-            >
-              <span className="w-2 h-2 rounded-full bg-red-500 mt-1 flex-shrink-0" />
-              <span>{error}</span>
-            </motion.div>
-          )}
-
           {/* Form */}
           <form onSubmit={handleSubmit} className="w-full space-y-[20px] text-left">
             <div>
@@ -103,11 +106,23 @@ function LoginFormContent() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailError) setEmailError(null);
+                }}
                 placeholder="Type your email"
-                className="w-full h-[48px] bg-[#121212] border border-white/10 rounded-xl px-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all font-sans"
-                required
+                className={`w-full h-[48px] bg-[#121212] border ${emailError ? 'border-red-500/80 focus:border-red-500 focus:ring-red-500' : 'border-white/10 focus:border-white focus:ring-white'} rounded-xl px-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 transition-all font-sans`}
               />
+              {emailError && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-red-400 font-medium mt-1.5 text-left flex items-center gap-1.5"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+                  <span>{emailError}</span>
+                </motion.p>
+              )}
             </div>
 
             <div>
@@ -130,10 +145,12 @@ function LoginFormContent() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (passwordError) setPasswordError(null);
+                  }}
                   placeholder="••••••••"
-                  className="w-full h-[48px] bg-[#121212] border border-white/10 rounded-xl px-4 pr-11 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all font-sans"
-                  required
+                  className={`w-full h-[48px] bg-[#121212] border ${passwordError ? 'border-red-500/80 focus:border-red-500 focus:ring-red-500' : 'border-white/10 focus:border-white focus:ring-white'} rounded-xl px-4 pr-11 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 transition-all font-sans`}
                 />
                 <button
                   type="button"
@@ -143,6 +160,16 @@ function LoginFormContent() {
                   {showPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
                 </button>
               </div>
+              {passwordError && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-red-400 font-medium mt-1.5 text-left flex items-center gap-1.5"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+                  <span>{passwordError}</span>
+                </motion.p>
+              )}
             </div>
 
             {/* Login Button (Homepage style) */}

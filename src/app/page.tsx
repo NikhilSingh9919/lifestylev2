@@ -719,36 +719,34 @@ function PomaHome() {
         </section>
 
         {/* SOLUTIONS BANNER / Frame 17 */}
-        <section className="relative min-h-[600px] md:h-[720px] text-white overflow-hidden mx-5 md:mx-[80px] rounded-[24px] px-6 md:px-[60px] py-6 md:py-[40px] flex flex-col justify-between">
-          {/* Background image & Overlay */}
-          <div className="absolute inset-0 z-0">
-            <Image
-              src="/assets/figma/solutions-bg.png"
-              alt="Solutions Background"
-              fill
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-[#111111]/30" />
-          </div>
+        <section className="bg-white py-6 md:py-12">
+          <div className="mx-5 md:mx-[80px] rounded-[24px] bg-black text-white min-h-[500px] md:h-[560px] overflow-hidden relative px-6 md:px-[60px] py-6 md:py-[40px] flex flex-col justify-center">
+            {/* Background image & Overlay */}
+            <div className="absolute inset-0 z-0">
+              <Image
+                src="/pomabru/poma-brush.webp"
+                alt="Solutions Background"
+                fill
+                className="object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-[#111111]/30" />
+            </div>
 
-          {/* Centered Heading */}
-          <div className="relative md:absolute md:inset-0 z-10 flex items-center justify-center py-12 md:py-0 px-6">
-            <h2 className="text-[32px] md:text-[60px] font-extrabold leading-[1.2] max-w-4xl text-white text-center">
-              Conscious solutions<br />for modern living
-            </h2>
-          </div>
-
-          {/* Bottom Right Info Card */}
-          <div className="relative md:absolute md:bottom-[40px] md:right-[40px] z-20 max-w-full md:max-w-[373px] flex flex-col gap-6 w-full mt-auto md:mt-0">
-            <p className="text-base md:text-[20px] text-white/80 font-normal leading-[1.5]">
-              We create products for people who value rituals. But with more intention, where it already exists.
-            </p>
-            <a
-              href="#shop"
-              className="inline-flex items-center justify-center py-4 rounded-full bg-white text-[#111111] text-lg font-bold hover:bg-neutral-200 transition-all w-[200px] shadow-lg cursor-pointer font-sans"
-            >
-              Shop now
-            </a>
+            {/* Content Left (Vertically centered "middle", left aligned) */}
+            <div className="relative z-10 flex flex-col justify-center text-left max-w-[485px] w-full">
+              <h2 className="text-[32px] md:text-[60px] font-extrabold leading-[1.2] text-white mb-[20px]">
+                Solutions for<br />Modern Living
+              </h2>
+              <p className="text-base md:text-[20px] text-white/80 font-normal leading-[1.5] mb-6">
+                We create products for people who value rituals. But with more intention, where it already exists.
+              </p>
+              <a
+                href="#shop"
+                className="inline-flex items-center justify-center py-4 rounded-full bg-white text-[#111111] text-lg font-bold hover:bg-neutral-200 transition-all w-[200px] shadow-lg cursor-pointer font-sans"
+              >
+                Shop now
+              </a>
+            </div>
           </div>
         </section>
 
@@ -822,10 +820,10 @@ function PomaHome() {
             {/* Promo Background Image & Overlay */}
             <div className="absolute inset-0 z-0">
               <Image
-                src="/assets/figma/skipcafe-bg.png"
+                src="/pomabru/poma-bru.webp"
                 alt="Skip the Cafe Background"
                 fill
-                className="object-cover object-[80%_center]"
+                className="object-cover object-center"
               />
               <div className="absolute inset-0 bg-[#111111]/30" />
             </div>

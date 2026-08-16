@@ -13,7 +13,7 @@ import {
 interface AuthContextType {
   customer: Customer | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; errorType?: 'EMAIL' | 'PASSWORD' | 'GENERIC' }>;
   register: (input: {
     firstName: string;
     lastName: string;
@@ -46,15 +46,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadProfile = async (token: string) => {
     try {
-      const { customer: fetchedCustomer, errors } = await medusaGetCustomer(token);
-      if (errors || !fetchedCustomer) {
+      const { customer: fetchedCustomer } = await medusaGetCustomer(token);
+      if (fetchedCustomer) {
+        setCustomer(fetchedCustomer);
+      } else {
+        if (typeof window !== 'undefined') {
+          const saved = localStorage.getItem('poma_active_customer');
+          if (saved) {
+            try {
+              const parsed = JSON.parse(saved);
+              if (parsed && parsed.email) {
+                setCustomer(parsed);
+                return;
+              }
+            } catch (e) {}
+          }
+        }
         removeStoredToken();
         setCustomer(null);
-      } else {
-        setCustomer(fetchedCustomer);
       }
     } catch (err) {
       console.error('Error loading customer profile:', err);
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('poma_active_customer');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            if (parsed && parsed.email) {
+              setCustomer(parsed);
+              return;
+            }
+          } catch (e) {}
+        }
+      }
       removeStoredToken();
       setCustomer(null);
     }
@@ -72,10 +96,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const { accessToken, errors } = await medusaLogin({ email, password });
+      const { accessToken, errorType, errors } = await medusaLogin({ email, password });
       if (errors && errors.length > 0) {
         setLoading(false);
-        return { success: false, error: errors[0] };
+        return { success: false, error: errors[0], errorType };
       }
       if (accessToken) {
         setStoredToken(accessToken);
@@ -84,10 +108,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: true };
       }
       setLoading(false);
-      return { success: false, error: 'Authentication failed. Please try again.' };
+      return { success: false, error: 'Authentication failed. Please try again.', errorType: 'GENERIC' as const };
     } catch (err: any) {
       setLoading(false);
-      return { success: false, error: err.message || 'An error occurred during sign-in.' };
+      return { success: false, error: err.message || 'An error occurred during sign-in.', errorType: 'GENERIC' as const };
     }
   };
 

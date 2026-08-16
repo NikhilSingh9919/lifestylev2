@@ -737,51 +737,86 @@ export async function medusaRegister(
 
 export async function medusaLogin(
   input: any
-): Promise<{ accessToken?: string; expiresAt?: string; errors?: string[] }> {
+): Promise<{ accessToken?: string; expiresAt?: string; errorType?: 'EMAIL' | 'PASSWORD' | 'GENERIC'; errors?: string[] }> {
   const backendUrl = env.NEXT_PUBLIC_MEDUSA_BACKEND_URL.replace(/\/$/, '');
   const { email, password } = input;
   const headers = getMedusaHeaders();
 
+  // 1. Check local mock customer first
+  const localUser = getMockCustomer(email);
+  if (localUser) {
+    if (localUser.passwordHash === password) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('poma_active_customer', JSON.stringify(localUser.customer));
+      }
+      const mockToken = `mock_token_${email.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Date.now()}`;
+      return { accessToken: mockToken, expiresAt: new Date(Date.now() + 86400 * 30 * 1000).toISOString() };
+    } else {
+      return { errorType: 'PASSWORD', errors: ['password is wrong.'] };
+    }
+  }
+
+  // 2. Try Medusa backend authentication
   try {
-    // Try Medusa v2 /auth/customer/emailpass
     let res = await fetch(`${backendUrl}/auth/customer/emailpass`, {
       method: 'POST',
       headers,
       body: JSON.stringify({ email, password }),
     });
 
-    if (!res.ok) {
-      // Fallback to /store/auth/token
-      res = await fetch(`${backendUrl}/store/auth/token`, {
+    let token: string | null = null;
+    let errMessage = '';
+
+    if (res.ok) {
+      const data = await res.json();
+      token = data.token || data.access_token;
+    } else {
+      const errJson = await res.json().catch(() => ({}));
+      errMessage = (errJson.message || errJson.error || '').toLowerCase();
+
+      let res2 = await fetch(`${backendUrl}/store/auth/token`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ email, password }),
       });
-    }
-
-    if (res.ok) {
-      const data = await res.json();
-      const token = data.token || data.access_token;
-      if (token) {
-        return {
-          accessToken: token,
-          expiresAt: new Date(Date.now() + 86400 * 30 * 1000).toISOString(),
-        };
+      if (res2.ok) {
+        const data = await res2.json();
+        token = data.token || data.access_token;
+      } else {
+        const errJson2 = await res2.json().catch(() => ({}));
+        const errMessage2 = (errJson2.message || errJson2.error || '').toLowerCase();
+        errMessage = (errMessage + ' ' + errMessage2).trim();
       }
     }
+
+    if (token) {
+      const activeCustomer: Customer = {
+        id: `cus_${Math.floor(Math.random() * 100000000)}`,
+        firstName: email.split('@')[0],
+        lastName: '',
+        email,
+        orders: [],
+      };
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('poma_active_customer', JSON.stringify(activeCustomer));
+        saveMockCustomer(email, password, activeCustomer);
+      }
+      return {
+        accessToken: token,
+        expiresAt: new Date(Date.now() + 86400 * 30 * 1000).toISOString(),
+      };
+    }
+
+    if (errMessage.includes('email') || errMessage.includes('not found') || errMessage.includes('user') || errMessage.includes('exist') || errMessage.includes('identity')) {
+      return { errorType: 'EMAIL', errors: ['email does not exist.'] };
+    } else {
+      return { errorType: 'PASSWORD', errors: ['password is wrong.'] };
+    }
   } catch (err) {
-    console.warn('Medusa login API offline, using local session mock:', err);
+    console.warn('Medusa login API offline:', err);
   }
 
-  const user = getMockCustomer(email);
-  if (user && user.passwordHash === password) {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('poma_active_customer', JSON.stringify(user.customer));
-    }
-    const mockToken = `mock_token_${email}_${Date.now()}`;
-    return { accessToken: mockToken, expiresAt: new Date(Date.now() + 86400 * 30 * 1000).toISOString() };
-  }
-  return { errors: ['Unidentified customer. Check your email and password.'] };
+  return { errorType: 'EMAIL', errors: ['email does not exist.'] };
 }
 
 export async function medusaGetCustomer(

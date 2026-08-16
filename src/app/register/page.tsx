@@ -20,7 +20,11 @@ function RegisterFormContent() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<string[]>([]);
+
+  const [fullNameError, setFullNameError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // If already logged in, redirect
@@ -32,23 +36,34 @@ function RegisterFormContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrors([]);
+    setFullNameError(null);
+    setEmailError(null);
+    setPasswordError(null);
+    setConfirmPasswordError(null);
     setIsSubmitting(true);
 
-    if (!fullName || !email || !password) {
-      setErrors(['Please fill in all required fields.']);
-      setIsSubmitting(false);
-      return;
+    let hasError = false;
+    if (!fullName.trim()) {
+      setFullNameError('Full name is required.');
+      hasError = true;
+    }
+    if (!email.trim()) {
+      setEmailError('Email is required.');
+      hasError = true;
+    }
+    if (!password) {
+      setPasswordError('Password is required.');
+      hasError = true;
+    } else if (password.length < 6) {
+      setPasswordError('Password must be at least 6 characters long.');
+      hasError = true;
+    }
+    if (password && confirmPassword && password !== confirmPassword) {
+      setConfirmPasswordError('Passwords do not match.');
+      hasError = true;
     }
 
-    if (password !== confirmPassword && confirmPassword) {
-      setErrors(['Passwords do not match.']);
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (password.length < 6) {
-      setErrors(['Password must be at least 6 characters long.']);
+    if (hasError) {
       setIsSubmitting(false);
       return;
     }
@@ -59,7 +74,14 @@ function RegisterFormContent() {
 
     const res = await register({ firstName, lastName, email, password });
     if (!res.success) {
-      setErrors(res.errors || ['An error occurred during account creation.']);
+      const errStr = (res.errors?.[0] || '').toLowerCase();
+      if (errStr.includes('email') || errStr.includes('exists') || errStr.includes('account')) {
+        setEmailError('email already exists.');
+      } else if (errStr.includes('password')) {
+        setPasswordError('Password is invalid.');
+      } else {
+        setEmailError(res.errors?.[0] || 'An error occurred during registration.');
+      }
       setIsSubmitting(false);
     } else {
       window.location.href = redirect;
@@ -101,22 +123,6 @@ function RegisterFormContent() {
             </h1>
           </div>
 
-          {/* Errors Alert Box */}
-          {errors.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="w-full mb-3 p-3 rounded-xl bg-red-950/40 border border-red-500/30 text-red-400 text-xs font-semibold space-y-1 text-left"
-            >
-              {errors.map((err, idx) => (
-                <div key={idx} className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1 flex-shrink-0" />
-                  <span>{err}</span>
-                </div>
-              ))}
-            </motion.div>
-          )}
-
           {/* Form */}
           <form onSubmit={handleSubmit} className="w-full space-y-[20px] text-left">
             <div>
@@ -126,11 +132,23 @@ function RegisterFormContent() {
               <input
                 type="text"
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => {
+                  setFullName(e.target.value);
+                  if (fullNameError) setFullNameError(null);
+                }}
                 placeholder="John Doe"
-                className="w-full h-[48px] bg-[#121212] border border-white/10 rounded-xl px-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all font-sans"
-                required
+                className={`w-full h-[48px] bg-[#121212] border ${fullNameError ? 'border-red-500/80 focus:border-red-500 focus:ring-red-500' : 'border-white/10 focus:border-white focus:ring-white'} rounded-xl px-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 transition-all font-sans`}
               />
+              {fullNameError && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-red-400 font-medium mt-1.5 text-left flex items-center gap-1.5"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+                  <span>{fullNameError}</span>
+                </motion.p>
+              )}
             </div>
 
             <div>
@@ -140,11 +158,23 @@ function RegisterFormContent() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailError) setEmailError(null);
+                }}
                 placeholder="Type your email"
-                className="w-full h-[48px] bg-[#121212] border border-white/10 rounded-xl px-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all font-sans"
-                required
+                className={`w-full h-[48px] bg-[#121212] border ${emailError ? 'border-red-500/80 focus:border-red-500 focus:ring-red-500' : 'border-white/10 focus:border-white focus:ring-white'} rounded-xl px-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 transition-all font-sans`}
               />
+              {emailError && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-red-400 font-medium mt-1.5 text-left flex items-center gap-1.5"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+                  <span>{emailError}</span>
+                </motion.p>
+              )}
             </div>
 
             <div>
@@ -155,10 +185,12 @@ function RegisterFormContent() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (passwordError) setPasswordError(null);
+                  }}
                   placeholder="••••••••"
-                  className="w-full h-[48px] bg-[#121212] border border-white/10 rounded-xl px-4 pr-11 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all font-sans"
-                  required
+                  className={`w-full h-[48px] bg-[#121212] border ${passwordError ? 'border-red-500/80 focus:border-red-500 focus:ring-red-500' : 'border-white/10 focus:border-white focus:ring-white'} rounded-xl px-4 pr-11 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 transition-all font-sans`}
                 />
                 <button
                   type="button"
@@ -168,6 +200,16 @@ function RegisterFormContent() {
                   {showPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
                 </button>
               </div>
+              {passwordError && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-red-400 font-medium mt-1.5 text-left flex items-center gap-1.5"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+                  <span>{passwordError}</span>
+                </motion.p>
+              )}
             </div>
 
             <div>
@@ -178,9 +220,12 @@ function RegisterFormContent() {
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    if (confirmPasswordError) setConfirmPasswordError(null);
+                  }}
                   placeholder="••••••••"
-                  className="w-full h-[48px] bg-[#121212] border border-white/10 rounded-xl px-4 pr-11 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all font-sans"
+                  className={`w-full h-[48px] bg-[#121212] border ${confirmPasswordError ? 'border-red-500/80 focus:border-red-500 focus:ring-red-500' : 'border-white/10 focus:border-white focus:ring-white'} rounded-xl px-4 pr-11 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 transition-all font-sans`}
                 />
                 <button
                   type="button"
@@ -190,6 +235,16 @@ function RegisterFormContent() {
                   {showConfirmPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
                 </button>
               </div>
+              {confirmPasswordError && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-red-400 font-medium mt-1.5 text-left flex items-center gap-1.5"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+                  <span>{confirmPasswordError}</span>
+                </motion.p>
+              )}
             </div>
 
             {/* Create Account Button (Homepage style) */}
