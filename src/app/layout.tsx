@@ -33,7 +33,7 @@ export default function RootLayout({
         <AuthProvider>
           <CartProvider>
             <Navbar />
-            <main className="flex-grow">{children}</main>
+            <main className="flex-grow flex flex-col">{children}</main>
             <Footer />
             <CartDrawer />
             <DiagnosticConsole />

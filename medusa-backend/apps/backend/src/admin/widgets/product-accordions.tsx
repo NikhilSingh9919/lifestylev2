@@ -147,9 +147,12 @@ const ProductAccordionsWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
     const loadedItems: AccordionItem[] = [];
     const keys: string[] = [];
     
+    // Read existing order from metadata if available
+    const existingOrder = Array.isArray(data.metadata._accordion_order) ? (data.metadata._accordion_order as string[]) : [];
+
     // Convert existing metadata object into array of title + content
     Object.entries(data.metadata).forEach(([key, val], idx) => {
-      if (key === 'custom_sections' || key === 'feature_sections') return;
+      if (key === 'custom_sections' || key === 'feature_sections' || key === '_accordion_order') return;
       if (!val || val === null || val === undefined || (typeof val === 'string' && val.trim() === '')) return;
 
       keys.push(key);
@@ -175,6 +178,18 @@ const ProductAccordionsWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
         content: contentStr,
       });
     });
+
+    // Sort loadedItems according to existingOrder if present
+    if (existingOrder.length > 0) {
+      loadedItems.sort((a, b) => {
+        const idxA = existingOrder.findIndex(o => o.toLowerCase() === a.title.toLowerCase());
+        const idxB = existingOrder.findIndex(o => o.toLowerCase() === b.title.toLowerCase());
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return 0;
+      });
+    }
 
     setInitialKeys(keys);
 
@@ -219,6 +234,17 @@ const ProductAccordionsWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
     setItems(newItems);
   };
 
+function cleanWidgetHtml(html: string): string {
+  if (!html || typeof html !== 'string') return '';
+  return html
+    .replace(/\s*style="[^"]*"/gi, '')
+    .replace(/\s*style='[^']*'/gi, '')
+    .replace(/<\/?slot[^>]*>/gi, '')
+    .replace(/<br\s*\/?>/gi, '')
+    .replace(/<p>\s*<\/p>/gi, '')
+    .replace(/<p><span><\/span><\/p>/gi, '');
+}
+
   const handleSave = async () => {
     if (!data?.id) return;
     setIsSaving(true);
@@ -227,18 +253,23 @@ const ProductAccordionsWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
       // Build updated metadata object from active accordion items
       const updatedMetadata: Record<string, any> = {};
       const currentActiveKeys = new Set<string>();
+      const orderedKeys: string[] = [];
 
       items.forEach(item => {
         const cleanTitle = item.title.trim();
         if (cleanTitle.length > 0) {
-          updatedMetadata[cleanTitle] = item.content;
+          updatedMetadata[cleanTitle] = typeof item.content === 'string' ? cleanWidgetHtml(item.content) : item.content;
           currentActiveKeys.add(cleanTitle);
+          orderedKeys.push(cleanTitle);
         }
       });
 
+      // Save explicit title ordering array to _accordion_order
+      updatedMetadata["_accordion_order"] = orderedKeys;
+
       // Crucial: Set any previously existing key that was deleted to NULL so Medusa deletes it from DB!
       initialKeys.forEach(prevKey => {
-        if (prevKey !== 'custom_sections' && prevKey !== 'feature_sections' && !currentActiveKeys.has(prevKey)) {
+        if (prevKey !== 'custom_sections' && prevKey !== 'feature_sections' && prevKey !== '_accordion_order' && !currentActiveKeys.has(prevKey)) {
           updatedMetadata[prevKey] = null;
         }
       });

@@ -4,7 +4,7 @@ import React, { useState, Suspense } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -48,26 +48,38 @@ function LoginFormContent() {
   };
 
   return (
-    <div className="min-h-[85vh] bg-neutral-50 text-neutral-900 flex items-center justify-center px-4 relative overflow-hidden font-sans py-16">
+    <div className="w-full flex-grow min-h-[calc(100vh-80px)] lg:h-[calc(100vh-80px)] bg-black text-white flex flex-col lg:flex-row items-center justify-between p-4 lg:p-6 font-sans overflow-hidden">
+      {/* Left side - Rounded Hero Image Card */}
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: 'easeOut' }}
-        className="w-full max-w-[460px] z-10"
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+        className="relative w-full lg:w-1/2 h-[320px] lg:h-full rounded-[24px] lg:rounded-[32px] overflow-hidden bg-neutral-900 border border-white/10 flex-shrink-0"
       >
-        {/* Simple Premium Container (Black card, 12px corners) */}
-        <div className="bg-neutral-950 border border-white/10 rounded-xl p-8 sm:p-10 shadow-2xl relative text-white">
-          
-          {/* Header (Centered Logo) */}
-          <div className="flex justify-center mb-8">
-            <Image
-              src="/logo.svg"
-              alt="Poma Lifestyle Logo"
-              width={160}
-              height={44}
-              className="h-[24px] md:h-[30px] w-auto"
-              priority
-            />
+        <Image
+          src="/Banner - pomafloss - Black & White Hero Banner.webp"
+          alt="Poma Lifestyle Hero"
+          fill
+          className="object-cover object-center"
+          priority
+        />
+        {/* Ambient Vignette Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
+      </motion.div>
+
+      {/* Right side - Login Form */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+        className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 xl:p-16 my-auto"
+      >
+        <div className="w-full max-w-[420px] flex flex-col items-start text-left">
+          {/* Header */}
+          <div className="w-full text-left mb-6 lg:mb-8">
+            <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-semibold text-white tracking-tight font-sans leading-tight text-left">
+              Login with pomalifestyle
+            </h1>
           </div>
 
           {/* Error Alert Box */}
@@ -75,37 +87,32 @@ function LoginFormContent() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="mb-6 p-4 rounded-xl bg-red-950/20 border border-red-500/20 text-red-400 text-xs font-semibold flex items-start gap-2"
+              className="w-full mb-4 p-3 rounded-xl bg-red-950/40 border border-red-500/30 text-red-400 text-xs font-semibold flex items-start gap-2.5"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 flex-shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-red-500 mt-1 flex-shrink-0" />
               <span>{error}</span>
             </motion.div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="w-full space-y-[20px] text-left">
             <div>
-              <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">
-                Email Address
+              <label className="block text-xs font-medium text-neutral-300 mb-1.5 text-left">
+                Email
               </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-500">
-                  <Mail className="h-4.5 w-4.5" />
-                </span>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
-                  className="w-full bg-neutral-900 border border-white/10 rounded-full py-3.5 pl-11 pr-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all duration-300 font-sans"
-                  required
-                />
-              </div>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Type your email"
+                className="w-full h-[48px] bg-[#121212] border border-white/10 rounded-xl px-4 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all font-sans"
+                required
+              />
             </div>
 
             <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider">
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="block text-xs font-medium text-neutral-300">
                   Password
                 </label>
                 <a
@@ -114,58 +121,48 @@ function LoginFormContent() {
                     e.preventDefault();
                     alert('Password recovery is managed by Medusa. A reset link would be sent in production.');
                   }}
-                  className="text-xs text-neutral-400 hover:text-white transition-colors duration-200 font-medium"
+                  className="text-xs text-neutral-400 hover:text-white transition-colors font-medium"
                 >
                   Forgot password?
                 </a>
               </div>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-500">
-                  <Lock className="h-4.5 w-4.5" />
-                </span>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-neutral-900 border border-white/10 rounded-full py-3.5 pl-11 pr-11 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all duration-300 font-sans"
+                  className="w-full h-[48px] bg-[#121212] border border-white/10 rounded-xl px-4 pr-11 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all font-sans"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-neutral-500 hover:text-white transition-colors duration-200"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-neutral-400 hover:text-white transition-colors"
                 >
                   {showPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
                 </button>
               </div>
             </div>
 
-            {/* Login Button - Design System Style */}
+            {/* Login Button (Homepage style) */}
             <button
               type="submit"
               disabled={isSubmitting || loading}
-              className="w-full relative flex items-center justify-center gap-2 py-3.5 px-4 rounded-full bg-white text-neutral-950 hover:bg-neutral-200 transition-all duration-300 font-semibold text-sm select-none disabled:opacity-50 cursor-pointer group shadow-md"
+              className="w-full inline-flex items-center justify-center py-3.5 px-8 rounded-full bg-white text-[#111111] text-sm sm:text-base font-bold hover:bg-neutral-200 transition-colors shadow-lg cursor-pointer font-sans disabled:opacity-50 mt-6"
             >
-              {isSubmitting || loading ? (
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-neutral-950 border-t-transparent"></div>
-              ) : (
-                <>
-                  Sign In
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
-                </>
-              )}
+              {isSubmitting || loading ? 'Logging In...' : 'Log In'}
             </button>
           </form>
 
-          {/* Register Footer */}
-          <div className="mt-8 text-center pt-6 border-t border-white/10 text-sm text-neutral-400">
+          {/* Register Link */}
+          <div className="mt-6 text-left text-sm text-neutral-400 font-sans w-full">
             Don&apos;t have an account?{' '}
             <Link
               href={`/register?redirect=${encodeURIComponent(redirect)}`}
-              className="text-white hover:underline font-semibold transition-colors duration-200"
+              className="text-blue-400 hover:underline font-semibold transition-colors ml-1"
             >
-              Create one
+              Sign Up
             </Link>
           </div>
         </div>
@@ -177,8 +174,8 @@ function LoginFormContent() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-[85vh] bg-neutral-50 text-neutral-900 flex items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-neutral-900 border-t-transparent" />
+      <div className="min-h-[calc(100vh-140px)] bg-black text-white flex items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-white border-t-transparent" />
       </div>
     }>
       <LoginFormContent />

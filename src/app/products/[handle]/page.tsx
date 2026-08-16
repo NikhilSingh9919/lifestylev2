@@ -38,15 +38,17 @@ const PRODUCT_DEFAULT_COLORS: Record<string, string[]> = {
 // Hardcoded premium local galleries to support multiple images per product slider
 const PRODUCT_GALLERIES: Record<string, string[]> = {
   'pomabrush': [
+    '/poma reduced.webp',
     '/assets/figma/hero-featured.png',
     '/assets/figma/lineup-pomabrush.png',
-    '/assets/figma/lineup-pomaaccessories.png',
   ],
   'pomabru': [
+    '/Pomabru - Hero Banner.webp',
     '/assets/figma/lineup-pomabru.png',
     '/assets/figma/skipcafe-bg.png',
   ],
   'pomafloss': [
+    '/Banner - pomafloss - Black & White Hero Banner.webp',
     '/assets/figma/lineup-pomafloss.png',
     '/assets/figma/solutions-bg.png',
   ],
@@ -522,15 +524,24 @@ export default function ProductDetailPage() {
   const getAccordions = () => {
     if (!product) return [];
 
-    const list: { title: string; content: string }[] = [];
+    const list: { key?: string; title: string; content: string }[] = [];
 
     // 1. Dynamically convert ALL key-value pairs from Medusa Metadata into Accordions
     if (product.metadata && typeof product.metadata === 'object') {
       Object.entries(product.metadata).forEach(([key, value]) => {
         if (!value) return;
 
-        // Skip internal non-accordion structural keys if they contain arrays of objects
-        if (key === 'whats_in_the_box' || key === 'custom_sections' || key === 'feature_sections') {
+        const lowerKey = key.toLowerCase();
+
+        // Skip internal non-accordion structural or order tracking metadata keys
+        if (
+          lowerKey === 'whats_in_the_box' || 
+          lowerKey === 'custom_sections' || 
+          lowerKey === 'feature_sections' ||
+          lowerKey === '_accordion_order' ||
+          lowerKey.includes('accordion_order') ||
+          key.startsWith('_')
+        ) {
           return;
         }
 
@@ -549,12 +560,26 @@ export default function ProductDetailPage() {
           const title = formatAccordionTitle(key);
           if (!list.some(item => item.title.toLowerCase() === title.toLowerCase())) {
             list.push({
+              key,
               title,
               content: contentString,
             });
           }
         }
       });
+
+      // Sort list according to product.metadata._accordion_order if available
+      const order = product.metadata._accordion_order;
+      if (Array.isArray(order) && order.length > 0) {
+        list.sort((a, b) => {
+          const idxA = order.findIndex((o: string) => (a.key && o.toLowerCase() === a.key.toLowerCase()) || o.toLowerCase() === a.title.toLowerCase());
+          const idxB = order.findIndex((o: string) => (b.key && o.toLowerCase() === b.key.toLowerCase()) || o.toLowerCase() === b.title.toLowerCase());
+          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+          if (idxA !== -1) return -1;
+          if (idxB !== -1) return 1;
+          return 0;
+        });
+      }
     }
 
     // 2. Also check product.metafields for any additional items

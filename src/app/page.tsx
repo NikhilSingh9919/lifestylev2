@@ -549,21 +549,24 @@ function PomaHome() {
       handle: 'pomabrush',
       title: heroProduct?.title || 'pomabrush model 2.0',
       price: heroProduct?.variants.nodes[0]?.price || '135.00',
-      image: '/assets/figma/hero-featured.png',
+      bannerImage: '/poma reduced.webp',
+      thumbnailImage: heroProduct?.images?.nodes?.[0]?.url || '/assets/figma/hero-featured.png',
       handleAdd: handleAddHero
     },
     {
       handle: 'pomafloss',
       title: flossProduct?.title || 'pomafloss active dispenser',
       price: flossProduct?.variants.nodes[0]?.price || '39.00',
-      image: '/assets/figma/lineup-pomafloss.png',
+      bannerImage: '/Banner - pomafloss - Black & White Hero Banner.webp',
+      thumbnailImage: flossProduct?.images?.nodes?.[0]?.url || '/assets/figma/lineup-pomafloss.png',
       handleAdd: handleAddFloss
     },
     {
       handle: 'pomabru',
       title: bruProduct?.title || 'pomabru espresso traveler',
       price: bruProduct?.variants.nodes[0]?.price || '99.00',
-      image: '/assets/figma/lineup-pomabru.png',
+      bannerImage: '/Pomabru - Hero Banner.webp',
+      thumbnailImage: bruProduct?.images?.nodes?.[0]?.url || '/assets/figma/lineup-pomabru.png',
       handleAdd: handleAddBru
     }
   ];
@@ -575,17 +578,28 @@ function PomaHome() {
       <main>
         {/* HERO SECTION / Frame 2 */}
         <section className="relative h-[calc(100vh-80px)] min-h-[640px] bg-[#111111] text-white flex flex-col justify-between overflow-hidden">
-          {/* Hero Background Video */}
-          <div className="absolute inset-0 z-0">
-            <video
-              ref={bgVideoRef}
-              src="/promo.webm"
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="absolute inset-0 w-full h-full object-cover opacity-60"
-            />
+          {/* Dynamic Hero Banner Background Image & Video Overlay */}
+          <div className="absolute inset-0 z-0 overflow-hidden">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeHeroProduct.bannerImage}
+                initial={{ opacity: 0, scale: 1.05 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+                className="absolute inset-0 w-full h-full"
+              >
+                <Image
+                  src={activeHeroProduct.bannerImage}
+                  alt={activeHeroProduct.title}
+                  fill
+                  className="object-cover object-center"
+                  priority
+                />
+              </motion.div>
+            </AnimatePresence>
+            {/* Ambient Dark Gradient Overlay for Readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/50 z-[1]" />
           </div>
 
           <div className="relative z-10 w-full px-5 md:px-[80px] h-full py-[60px] flex flex-col justify-between flex-grow">
@@ -598,14 +612,15 @@ function PomaHome() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="max-w-2xl flex flex-col text-white lowercase"
+                className="max-w-2xl flex flex-col text-white"
               >
-                <h1 className="text-[32px] md:text-[48px] font-extrabold leading-[1.2] tracking-tight font-sans md:whitespace-nowrap">
-                  smile freely with
+                <h1 className="text-[32px] md:text-[48px] font-extrabold leading-[1.2] tracking-tight font-sans flex flex-col">
+                  <span>Shop the</span>
+                  <span>pomalifestyle range</span>
                 </h1>
-                <span className="text-[32px] md:text-[48px] font-extrabold leading-[1.2] tracking-tight font-sans md:whitespace-nowrap">
-                  poma lifestyle
-                </span>
+                <p className="text-[18px] sm:text-[24px] font-normal opacity-80 mt-2 font-sans">
+                  Authorized distributor for Poma lifestyle
+                </p>
               </motion.div>
 
               {/* Featured Product Overlay Wrapper containing Card and Dots */}
@@ -621,10 +636,10 @@ function PomaHome() {
                   className="w-full sm:w-[411px] rounded-3xl bg-[#111111]/45 backdrop-blur-lg border border-white/10 p-6 flex flex-col gap-6 group/hero-card hover:ring-[1px] hover:ring-white/60 transition-all duration-300 cursor-pointer"
                 >
                   <div className="flex items-center gap-6">
-                    {/* Thumbnail (image fills container) */}
+                    {/* Thumbnail (matches thumbnail set in Medusa) */}
                     <div className="relative w-[103px] h-[103px] rounded-2xl bg-white flex items-center justify-center overflow-hidden flex-shrink-0">
                       <Image
-                        src={activeHeroProduct.image}
+                        src={activeHeroProduct.thumbnailImage}
                         alt={activeHeroProduct.title}
                         fill
                         className="object-cover"
@@ -685,9 +700,9 @@ function PomaHome() {
             {/* Product categories grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {[
-                { prefix: 'poma', suffix: 'brush', handle: 'pomabrush', img: '/assets/figma/lineup-pomabrush.png' },
-                { prefix: 'poma', suffix: 'floss', handle: 'pomafloss', img: '/assets/figma/lineup-pomafloss.png' },
-                { prefix: 'poma', suffix: 'bru', handle: 'pomabru', img: '/assets/figma/lineup-pomabru.png' },
+                { prefix: 'poma', suffix: 'brush', handle: 'pomabrush', img: '/poma reduced.webp' },
+                { prefix: 'poma', suffix: 'floss', handle: 'pomafloss', img: '/Banner - pomafloss - Black & White Hero Banner.webp' },
+                { prefix: 'poma', suffix: 'bru', handle: 'pomabru', img: '/Pomabru - Hero Banner.webp' },
                 { prefix: 'poma', suffix: 'accessoris', handle: 'pomaaccessoris', img: '/assets/figma/lineup-pomaaccessories.png', scrollTarget: '#accessories' },
               ].map((item, idx) => (
                 <LineupItem
@@ -704,7 +719,7 @@ function PomaHome() {
         </section>
 
         {/* SOLUTIONS BANNER / Frame 17 */}
-        <section className="relative min-h-[600px] md:h-[720px] text-white overflow-hidden mx-5 md:mx-[80px] rounded-[24px] p-6 md:p-[40px] flex flex-col justify-between">
+        <section className="relative min-h-[600px] md:h-[720px] text-white overflow-hidden mx-5 md:mx-[80px] rounded-[24px] px-6 md:px-[60px] py-6 md:py-[40px] flex flex-col justify-between">
           {/* Background image & Overlay */}
           <div className="absolute inset-0 z-0">
             <Image
@@ -718,7 +733,7 @@ function PomaHome() {
 
           {/* Centered Heading */}
           <div className="relative md:absolute md:inset-0 z-10 flex items-center justify-center py-12 md:py-0 px-6">
-            <h2 className="text-[32px] md:text-[60px] font-extrabold leading-[1.2] max-w-4xl text-white text-center lowercase">
+            <h2 className="text-[32px] md:text-[60px] font-extrabold leading-[1.2] max-w-4xl text-white text-center">
               Conscious solutions<br />for modern living
             </h2>
           </div>
@@ -730,7 +745,7 @@ function PomaHome() {
             </p>
             <a
               href="#shop"
-              className="inline-flex items-center justify-center px-12 py-4 rounded-full bg-white text-[#111111] text-lg font-bold hover:bg-neutral-200 transition-all w-full shadow-lg cursor-pointer font-sans"
+              className="inline-flex items-center justify-center py-4 rounded-full bg-white text-[#111111] text-lg font-bold hover:bg-neutral-200 transition-all w-[200px] shadow-lg cursor-pointer font-sans"
             >
               Shop now
             </a>
@@ -741,10 +756,26 @@ function PomaHome() {
         <section className="bg-white py-12 md:py-20">
           <div className="px-5 md:px-[80px]">
             {/* Header row */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 md:mb-12">
+            <div className="flex items-center justify-between gap-4 mb-8 md:mb-12">
               <h2 className="text-[32px] md:text-[48px] font-bold text-[#111111] leading-tight">
                 You shouldn’t miss on these
               </h2>
+              <div className="hidden md:flex items-center gap-4 flex-shrink-0">
+                <button
+                  onClick={() => scroll(bestSellersRef, 'left')}
+                  className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
+                  aria-label="Previous Slide"
+                >
+                  <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
+                </button>
+                <button
+                  onClick={() => scroll(bestSellersRef, 'right')}
+                  className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
+                  aria-label="Next Slide"
+                >
+                  <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
+                </button>
+              </div>
             </div>
 
             {/* Product Cards Row (Scrollable Carousel, dynamic width) */}
@@ -765,21 +796,21 @@ function PomaHome() {
               )}
             </div>
 
-            {/* Slider Arrows below cards */}
-            <div className="flex justify-center gap-4 mt-8">
+            {/* Slider Arrows below cards (mobile only) */}
+            <div className="flex md:hidden justify-center gap-4 mt-8">
               <button
                 onClick={() => scroll(bestSellersRef, 'left')}
-                className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
                 aria-label="Previous Slide"
               >
-                <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
+                <ChevronLeft className="h-5 w-5" />
               </button>
               <button
                 onClick={() => scroll(bestSellersRef, 'right')}
-                className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
                 aria-label="Next Slide"
               >
-                <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
+                <ChevronRight className="h-5 w-5" />
               </button>
             </div>
           </div>
@@ -787,7 +818,7 @@ function PomaHome() {
 
         {/* FEATURED PROMO / Frame 21 */}
         <section className="bg-white py-6 md:py-12">
-          <div className="mx-5 md:mx-[80px] rounded-[24px] bg-black text-white min-h-[500px] md:h-[560px] overflow-hidden relative p-6 md:p-[40px] flex flex-col justify-center">
+          <div className="mx-5 md:mx-[80px] rounded-[24px] bg-black text-white min-h-[500px] md:h-[560px] overflow-hidden relative px-6 md:px-[60px] py-6 md:py-[40px] flex flex-col justify-center">
             {/* Promo Background Image & Overlay */}
             <div className="absolute inset-0 z-0">
               <Image
@@ -801,15 +832,15 @@ function PomaHome() {
 
             {/* Content Left (Vertically centered "middle", left aligned) */}
             <div className="relative z-10 flex flex-col justify-center text-left max-w-[485px] w-full">
-              <h2 className="text-[32px] md:text-[60px] font-extrabold leading-[1.2] text-white lowercase mb-[20px]">
-                skip the café
+              <h2 className="text-[32px] md:text-[60px] font-extrabold leading-[1.2] text-white mb-[20px]">
+                Skip the Café
               </h2>
               <p className="text-base md:text-[20px] text-white/80 font-normal leading-[1.5] mb-6">
                 From early flights to quiet mountain mornings, it reimagines the ritual of espresso for modern travel-combining convenience, precision, and the pleasure of a perfect cup.
               </p>
               <button
                 onClick={() => router.push('/products/pomabru')}
-                className="inline-flex items-center justify-center px-10 py-4 rounded-full bg-white text-[#111111] text-lg font-bold hover:bg-neutral-200 transition-colors w-full cursor-pointer shadow-lg font-sans"
+                className="inline-flex items-center justify-center py-4 rounded-full bg-white text-[#111111] text-lg font-bold hover:bg-neutral-200 transition-colors w-[200px] cursor-pointer shadow-lg font-sans"
               >
                 Get Pomabru
               </button>
@@ -821,10 +852,26 @@ function PomaHome() {
         <section id="accessories" className="bg-white py-12 md:py-20 scroll-mt-20">
           <div className="px-5 md:px-[80px]">
             {/* Header row */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 md:mb-12">
+            <div className="flex items-center justify-between gap-4 mb-8 md:mb-12">
               <h2 className="text-[32px] md:text-[48px] font-bold text-[#111111] leading-tight">
                 Don’t forget your accessories
               </h2>
+              <div className="hidden md:flex items-center gap-4 flex-shrink-0">
+                <button
+                  onClick={() => scroll(accessoriesRef, 'left')}
+                  className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
+                  aria-label="Previous Slide"
+                >
+                  <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
+                </button>
+                <button
+                  onClick={() => scroll(accessoriesRef, 'right')}
+                  className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
+                  aria-label="Next Slide"
+                >
+                  <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
+                </button>
+              </div>
             </div>
 
             {/* Product Cards Row (Scrollable Carousel, restored fixed width) */}
@@ -860,21 +907,21 @@ function PomaHome() {
               )}
             </div>
 
-            {/* Slider Arrows below cards */}
-            <div className="flex justify-center gap-4 mt-8">
+            {/* Slider Arrows below cards (mobile only) */}
+            <div className="flex md:hidden justify-center gap-4 mt-8">
               <button
                 onClick={() => scroll(accessoriesRef, 'left')}
-                className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
                 aria-label="Previous Slide"
               >
-                <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
+                <ChevronLeft className="h-5 w-5" />
               </button>
               <button
                 onClick={() => scroll(accessoriesRef, 'right')}
-                className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-black bg-transparent text-black hover:bg-neutral-100 transition-colors cursor-pointer"
                 aria-label="Next Slide"
               >
-                <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
+                <ChevronRight className="h-5 w-5" />
               </button>
             </div>
           </div>
