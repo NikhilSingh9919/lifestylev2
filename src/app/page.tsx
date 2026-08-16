@@ -599,7 +599,7 @@ function PomaHome() {
               </motion.div>
             </AnimatePresence>
             {/* Ambient Dark Gradient Overlay for Readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/50 z-[1]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent md:bg-gradient-to-t md:from-black/80 md:via-black/30 md:to-black/50 z-[1]" />
           </div>
 
           <div className="relative z-10 w-full px-5 md:px-[80px] h-full py-[60px] flex flex-col justify-between flex-grow">
@@ -618,13 +618,13 @@ function PomaHome() {
                   <span>Shop the</span>
                   <span>pomalifestyle range</span>
                 </h1>
-                <p className="text-[18px] sm:text-[24px] font-normal opacity-80 mt-2 font-sans">
+                <p className="text-[18px] sm:text-[24px] font-normal opacity-80 mt-2 sm:mt-[20px] font-sans">
                   Authorized distributor for Poma lifestyle
                 </p>
               </motion.div>
 
               {/* Featured Product Overlay Wrapper containing Card and Dots */}
-              <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
+              <div className="flex flex-row items-center gap-3 sm:gap-4 w-full lg:w-auto">
                 {/* Featured Product Overlay Card / Frame 41 */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -633,11 +633,11 @@ function PomaHome() {
                   onMouseEnter={() => setIsHeroHovered(true)}
                   onMouseLeave={() => setIsHeroHovered(false)}
                   onClick={() => router.push(`/products/${activeHeroProduct.handle}`)}
-                  className="w-full sm:w-[411px] rounded-3xl bg-[#111111]/45 backdrop-blur-lg border border-white/10 p-6 flex flex-col gap-6 group/hero-card hover:ring-[1px] hover:ring-white/60 transition-all duration-300 cursor-pointer"
+                  className="flex-grow sm:flex-initial w-full sm:w-[411px] max-w-[calc(100vw-64px)] sm:max-w-none rounded-3xl bg-[#111111]/45 backdrop-blur-lg border border-white/10 p-3.5 sm:p-6 group/hero-card hover:ring-[1px] hover:ring-white/60 transition-all duration-300 cursor-pointer overflow-hidden"
                 >
-                  <div className="flex items-center gap-6">
-                    {/* Thumbnail (matches thumbnail set in Medusa) */}
-                    <div className="relative w-[103px] h-[103px] rounded-2xl bg-white flex items-center justify-center overflow-hidden flex-shrink-0">
+                  <div className="flex items-center gap-3 sm:gap-6 w-full">
+                    {/* Container 1: Thumbnail (matches thumbnail set in Medusa) */}
+                    <div className="relative w-[72px] h-[72px] sm:w-[103px] sm:h-[103px] rounded-2xl bg-white flex items-center justify-center overflow-hidden flex-shrink-0">
                       <Image
                         src={activeHeroProduct.thumbnailImage}
                         alt={activeHeroProduct.title}
@@ -645,36 +645,42 @@ function PomaHome() {
                         className="object-cover"
                       />
                     </div>
-                    {/* Title and price */}
-                    <div className="flex flex-col justify-center flex-grow">
-                      <h4 className="text-base sm:text-lg font-semibold text-white lowercase">{activeHeroProduct.title}</h4>
-                      <div className="flex items-center justify-between mt-2 gap-[12px]">
-                        <span className="text-xl sm:text-2xl font-bold text-white">£{parseFloat(activeHeroProduct.price).toFixed(2)}</span>
-                        {/* Black morphing add to bag button */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            activeHeroProduct.handleAdd();
-                          }}
-                          className="h-14 w-14 group-hover/hero-card:w-[110px] transition-all duration-300 rounded-full bg-neutral-900 text-white hover:bg-neutral-800 border border-white/10 cursor-pointer flex items-center justify-start gap-2 px-4 overflow-hidden flex-shrink-0 font-sans"
-                        >
-                          <ShoppingBag className="h-6 w-6 flex-shrink-0" />
-                          <span className="w-0 opacity-0 group-hover/hero-card:w-auto group-hover/hero-card:opacity-100 transition-all duration-300 text-sm font-semibold whitespace-nowrap overflow-hidden">
-                            Add
-                          </span>
-                        </button>
-                      </div>
+
+                    {/* Container 2: Text Container (Title + Price) */}
+                    <div className="flex flex-col justify-center flex-grow min-w-0 pr-1">
+                      <h4 className="text-[14px] sm:text-lg font-semibold text-white lowercase leading-tight break-words font-sans">
+                        {activeHeroProduct.title}
+                      </h4>
+                      <span className="text-base sm:text-2xl font-bold text-white mt-1 sm:mt-2">
+                        £{parseFloat(activeHeroProduct.price).toFixed(2)}
+                      </span>
+                    </div>
+
+                    {/* Container 3: Separate Add Button Container (Middle of widget, 60x60 on mobile) */}
+                    <div className="flex items-center justify-center flex-shrink-0 self-center">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          activeHeroProduct.handleAdd();
+                        }}
+                        className="w-[60px] h-[60px] sm:h-14 sm:w-14 sm:group-hover/hero-card:w-[110px] transition-all duration-300 rounded-full bg-neutral-900 text-white hover:bg-neutral-800 border border-white/10 cursor-pointer flex items-center justify-center sm:justify-start gap-2 px-0 sm:px-4 overflow-hidden font-sans"
+                      >
+                        <ShoppingBag className="h-6 w-6 flex-shrink-0" />
+                        <span className="hidden sm:inline-block w-0 opacity-0 group-hover/hero-card:w-auto group-hover/hero-card:opacity-100 transition-all duration-300 text-sm font-semibold whitespace-nowrap overflow-hidden">
+                          Add
+                        </span>
+                      </button>
                     </div>
                   </div>
                 </motion.div>
 
-                {/* Dots */}
-                <div className="flex sm:flex-col gap-3 justify-center py-2 sm:py-0">
+                {/* Dots on the right of widget for both mobile and desktop */}
+                <div className="flex flex-col gap-3 justify-center py-0 flex-shrink-0">
                   {[0, 1, 2].map((idx) => (
                     <button
                       key={idx}
                       onClick={() => setHeroActiveIndex(idx)}
-                      className={`w-3 h-3 rounded-full transition-all duration-300 cursor-pointer ${heroActiveIndex === idx ? 'bg-white scale-125' : 'bg-white/30 hover:bg-white/50'
+                      className={`w-[8px] h-[8px] rounded-full transition-all duration-300 cursor-pointer ${heroActiveIndex === idx ? 'bg-white scale-125' : 'bg-white/30 hover:bg-white/50'
                         }`}
                       aria-label={`Go to slide ${idx + 1}`}
                     />
@@ -720,21 +726,21 @@ function PomaHome() {
 
         {/* SOLUTIONS BANNER / Frame 17 */}
         <section className="bg-white py-6 md:py-12">
-          <div className="mx-5 md:mx-[80px] rounded-[24px] bg-black text-white min-h-[500px] md:h-[560px] overflow-hidden relative px-6 md:px-[60px] py-6 md:py-[40px] flex flex-col justify-center">
+          <div className="mx-5 md:mx-[80px] rounded-[24px] bg-black text-white min-h-[540px] md:h-[560px] overflow-hidden relative px-6 md:px-[60px] py-8 md:py-[40px] flex flex-col justify-end md:justify-center">
             {/* Background image & Overlay */}
             <div className="absolute inset-0 z-0">
               <Image
                 src="/pomabru/poma-brush.webp"
                 alt="Solutions Background"
                 fill
-                className="object-cover object-center"
+                className="object-cover object-[75%_20%] md:object-center"
               />
-              <div className="absolute inset-0 bg-[#111111]/30" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
             </div>
 
             {/* Content Left (Vertically centered "middle", left aligned) */}
-            <div className="relative z-10 flex flex-col justify-center text-left max-w-[485px] w-full">
-              <h2 className="text-[32px] md:text-[60px] font-extrabold leading-[1.2] text-white mb-[20px]">
+            <div className="relative z-10 flex flex-col justify-end md:justify-center text-left max-w-[485px] w-full">
+              <h2 className="text-[32px] md:text-[60px] font-extrabold leading-[1.2] text-white mb-[8px] md:mb-[20px]">
                 Solutions for<br />Modern Living
               </h2>
               <p className="text-base md:text-[20px] text-white/80 font-normal leading-[1.5] mb-6">
@@ -816,21 +822,21 @@ function PomaHome() {
 
         {/* FEATURED PROMO / Frame 21 */}
         <section className="bg-white py-6 md:py-12">
-          <div className="mx-5 md:mx-[80px] rounded-[24px] bg-black text-white min-h-[500px] md:h-[560px] overflow-hidden relative px-6 md:px-[60px] py-6 md:py-[40px] flex flex-col justify-center">
+          <div className="mx-5 md:mx-[80px] rounded-[24px] bg-black text-white min-h-[540px] md:h-[560px] overflow-hidden relative px-6 md:px-[60px] py-8 md:py-[40px] flex flex-col justify-end md:justify-center">
             {/* Promo Background Image & Overlay */}
             <div className="absolute inset-0 z-0">
               <Image
                 src="/pomabru/poma-bru.webp"
                 alt="Skip the Cafe Background"
                 fill
-                className="object-cover object-center"
+                className="object-cover object-[80%_20%] md:object-center"
               />
-              <div className="absolute inset-0 bg-[#111111]/30" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
             </div>
 
             {/* Content Left (Vertically centered "middle", left aligned) */}
-            <div className="relative z-10 flex flex-col justify-center text-left max-w-[485px] w-full">
-              <h2 className="text-[32px] md:text-[60px] font-extrabold leading-[1.2] text-white mb-[20px]">
+            <div className="relative z-10 flex flex-col justify-end md:justify-center text-left max-w-[485px] w-full">
+              <h2 className="text-[32px] md:text-[60px] font-extrabold leading-[1.2] text-white mb-[8px] md:mb-[20px]">
                 Skip the Café
               </h2>
               <p className="text-base md:text-[20px] text-white/80 font-normal leading-[1.5] mb-6">
