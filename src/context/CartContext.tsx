@@ -50,7 +50,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('poma_cart', JSON.stringify(newCart));
   };
 
-  const addToCart = (item: Omit<CartItem, 'quantity'>, quantityToAdd = 1) => {
+  const addToCart = (item: Omit<CartItem, 'quantity'> & { availableForSale?: boolean; quantityAvailable?: number }, quantityToAdd = 1) => {
+    // Check inventory availability
+    if (item.availableForSale === false || (item.quantityAvailable !== undefined && item.quantityAvailable <= 0)) {
+      alert(`Sorry, "${item.title}" is currently out of stock.`);
+      return;
+    }
+
     const existing = cart.find((i) => i.variantId === item.variantId);
     if (existing) {
       const updated = cart.map((i) =>
@@ -83,17 +89,50 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (cart.length === 0) return;
     try {
       setIsCheckingOut(true);
-      const items = cart.map((item) => ({
-        variantId: item.variantId,
-        quantity: item.quantity,
-      }));
       const token = typeof window !== 'undefined' 
         ? localStorage.getItem('medusa_customer_access_token') || undefined 
         : undefined;
-      const checkoutUrl = await generateCheckoutLink(items, token);
-      window.location.href = checkoutUrl;
-    } catch (error) {
-      console.error('Checkout redirect failed:', error);
+
+      let customerData: any = undefined;
+      let email: string | undefined;
+      if (typeof window !== 'undefined') {
+        const cust = localStorage.getItem('poma_active_customer');
+        if (cust) {
+          try {
+            customerData = JSON.parse(cust);
+            email = customerData.email;
+          } catch (e) {}
+        }
+      }
+
+      const res = await fetch('/api/stripe-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cart,
+          email,
+          customer: customerData,
+          customerToken: token,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.url) {
+        window.location.href = data.url;
+        return;
+      }
+
+      if (data.error) {
+        alert(`Stripe Checkout Error: ${data.error}\n${data.details || ''}`);
+        setIsCheckingOut(false);
+        return;
+      }
+
+      window.location.href = '/checkout';
+    } catch (error: any) {
+      console.error('Stripe Hosted Checkout redirect failed:', error);
+      alert(`Stripe Checkout Error: ${error.message || 'Network error'}`);
       setIsCheckingOut(false);
     }
   };

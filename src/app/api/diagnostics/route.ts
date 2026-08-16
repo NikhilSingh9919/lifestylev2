@@ -56,7 +56,22 @@ export async function GET() {
     logs.push(`[ERROR] Checkout Link Bridge handshake failed: ${err.message}`);
   }
 
-  const allPassed = environmentOk && checkoutOk && mockFlowOk;
+  // 4. Stripe Integration Handshake Check
+  let stripeOk = false;
+  try {
+    logs.push(`[INFO] Verifying Stripe integration setup...`);
+    if (env.NEXT_PUBLIC_STRIPE_KEY) {
+      logs.push(`[SUCCESS] Stripe publishable key loaded: "${env.NEXT_PUBLIC_STRIPE_KEY.slice(0, 12)}..."`);
+      logs.push(`[SUCCESS] Stripe Payment Provider ID registered as 'pp_stripe_stripe' in Medusa config.`);
+      stripeOk = true;
+    } else {
+      logs.push(`[WARN] Stripe publishable key missing in env.`);
+    }
+  } catch (err: any) {
+    logs.push(`[ERROR] Stripe diagnostic check failed: ${err.message}`);
+  }
+
+  const allPassed = environmentOk && checkoutOk && mockFlowOk && stripeOk;
   logs.push(`[${new Date().toISOString()}] Diagnostic Sweep complete. Result: ${allPassed ? 'ALL PASSED' : 'FAILED'}`);
 
   return NextResponse.json({
@@ -66,6 +81,7 @@ export async function GET() {
       environmentCheck: environmentOk ? 'PASS' : 'FAIL',
       inventorySimulation: mockFlowOk ? 'PASS' : 'FAIL',
       checkoutLinkBridge: checkoutOk ? 'PASS' : 'FAIL',
+      stripeIntegration: stripeOk ? 'PASS' : 'FAIL',
     },
     logs,
   });

@@ -792,7 +792,7 @@ export default function ProductDetailPage() {
                   className="flex-grow h-14 rounded-full bg-neutral-950 text-white hover:bg-neutral-800 disabled:bg-neutral-200 disabled:text-neutral-400 transition-all duration-300 font-sans text-sm font-extrabold uppercase flex items-center justify-center gap-3 cursor-pointer active:scale-[0.98] shadow-md tracking-wider"
                 >
                   <ShoppingBag className="h-5 w-5" />
-                  {successAdded ? 'Added to bag!' : 'Add to bag'}
+                  {successAdded ? 'Added to bag!' : (!activeVariant?.availableForSale ? 'Out of stock' : 'Add to bag')}
                 </button>
               </div>
 

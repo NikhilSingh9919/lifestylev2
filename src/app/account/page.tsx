@@ -199,7 +199,7 @@ export default function AccountPage() {
                         <div className="space-y-1">
                           <div className="flex items-center gap-3">
                             <span className="font-bold text-neutral-900 text-lg">
-                              Order #{order.orderNumber}
+                              Order #{String(order.orderNumber).startsWith('POMA-') ? order.orderNumber : `POMA-${order.orderNumber}`}
                             </span>
                             <span className="text-xs text-neutral-400 font-medium flex items-center gap-1">
                               <Calendar className="h-3.5 w-3.5" />
