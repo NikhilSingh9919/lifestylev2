@@ -35,7 +35,7 @@ export default async function initial_data_seed({
     ModuleRegistrationName.FULFILLMENT
   );
 
-  const countries = ["gb", "de", "dk", "se", "fr", "es", "it"];
+  const countries = ["gb", "ie", "in"];
 
   logger.info("Seeding store data...");
 
@@ -104,11 +104,15 @@ export default async function initial_data_seed({
             name: "Default Store",
             supported_currencies: [
               {
-                currency_code: "eur",
+                currency_code: "gbp",
                 is_default: true,
               },
               {
-                currency_code: "usd",
+                currency_code: "eur",
+                is_default: false,
+              },
+              {
+                currency_code: "inr",
                 is_default: false,
               },
             ],
@@ -131,8 +135,8 @@ export default async function initial_data_seed({
       input: {
         regions: [
           {
-            name: "Europe",
-            currency_code: "eur",
+            name: "UK, Ireland & India",
+            currency_code: "gbp",
             countries,
             payment_providers: ["pp_system_default"],
           },

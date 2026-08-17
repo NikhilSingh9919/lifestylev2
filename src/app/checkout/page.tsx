@@ -16,6 +16,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { createAndCompleteMedusaOrder } from '@/lib/medusa';
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
@@ -39,19 +40,11 @@ function CheckoutContent() {
     phone: '',
   });
 
-  // Payment Form State
-  const [cardData, setCardData] = useState({
-    cardNumber: '',
-    cardName: '',
-    expiry: '',
-    cvc: '',
-  });
-
-  const [paymentMode, setPaymentMode] = useState<'stripe_direct' | 'stripe_checkout'>('stripe_checkout');
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [orderConfirmed, setOrderConfirmed] = useState(false);
   const [confirmedOrderId, setConfirmedOrderId] = useState('POMA-884920');
+  const [confirmedEmail, setConfirmedEmail] = useState('');
 
   // Load user from local session if logged in
   useEffect(() => {
@@ -79,43 +72,92 @@ function CheckoutContent() {
   useEffect(() => {
     if (isSuccessParam && !hasClearedRef.current) {
       hasClearedRef.current = true;
-      setConfirmedOrderId(`POMA-${Math.floor(100000 + Math.random() * 900000)}`);
-      setOrderConfirmed(true);
-      clearCart();
+      const sessionId = searchParams.get('session_id');
+
+      if (sessionId) {
+        setIsProcessing(true);
+        fetch('/api/checkout/confirm-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.order) {
+              const orderRef = `#${data.order.displayId || data.order.orderNumber}`;
+              setConfirmedOrderId(orderRef);
+              if (data.customerEmail) {
+                setConfirmedEmail(data.customerEmail);
+              }
+
+              // Synchronize local customer profile and order history
+              if (typeof window !== 'undefined') {
+                const targetEmail = (data.customerEmail || formData.email || '').toLowerCase();
+                const savedActive = localStorage.getItem('poma_active_customer');
+                let updatedCust: any = null;
+
+                if (savedActive) {
+                  try {
+                    const parsed = JSON.parse(savedActive);
+                    const existingOrders = parsed.orders || [];
+                    parsed.orders = [data.order, ...existingOrders.filter((prevO: any) => prevO.id !== data.order.id)];
+                    updatedCust = parsed;
+                  } catch {}
+                }
+
+                if (!updatedCust && targetEmail) {
+                  updatedCust = {
+                    id: `cus_${Math.floor(Math.random() * 100000000)}`,
+                    firstName: data.order.lineItems?.[0]?.title ? 'Valued' : 'Customer',
+                    lastName: 'Customer',
+                    email: targetEmail,
+                    orders: [data.order],
+                  };
+                }
+
+                if (updatedCust) {
+                  localStorage.setItem('poma_active_customer', JSON.stringify(updatedCust));
+                  if (targetEmail) {
+                    const userKey = `poma_user_${targetEmail}`;
+                    const savedUser = localStorage.getItem(userKey);
+                    if (savedUser) {
+                      try {
+                        const parsedUser = JSON.parse(savedUser);
+                        parsedUser.customer = updatedCust;
+                        localStorage.setItem(userKey, JSON.stringify(parsedUser));
+                      } catch {}
+                    }
+                  }
+                }
+              }
+
+              setOrderConfirmed(true);
+              clearCart();
+            } else {
+              setErrorMessage(data.error || 'Unable to record order on Medusa backend.');
+            }
+          })
+          .catch((err) => {
+            console.error('Session confirmation failed:', err);
+            setErrorMessage('Unable to connect to Medusa backend for order confirmation.');
+          })
+          .finally(() => {
+            setIsProcessing(false);
+          });
+      }
     }
-  }, [isSuccessParam, clearCart]);
+  }, [isSuccessParam, searchParams, clearCart]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleCardChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    if (name === 'cardNumber') {
-      const cleaned = value.replace(/\D/g, '').slice(0, 16);
-      const formatted = cleaned.replace(/(\d{4})(?=\d)/g, '$1 ');
-      setCardData((prev) => ({ ...prev, cardNumber: formatted }));
-      return;
-    }
-    if (name === 'expiry') {
-      const cleaned = value.replace(/\D/g, '').slice(0, 4);
-      const formatted = cleaned.length >= 3 ? `${cleaned.slice(0, 2)}/${cleaned.slice(2)}` : cleaned;
-      setCardData((prev) => ({ ...prev, expiry: formatted }));
-      return;
-    }
-    if (name === 'cvc') {
-      const cleaned = value.replace(/\D/g, '').slice(0, 4);
-      setCardData((prev) => ({ ...prev, cvc: cleaned }));
-      return;
-    }
-    setCardData((prev) => ({ ...prev, [name]: value }));
-  };
-
   // Stripe Checkout Session Redirect Handler
-  const handleStripeCheckoutRedirect = async () => {
-    if (!formData.email) {
-      setErrorMessage('Please enter your email address to proceed.');
+  const handleStripeCheckoutRedirect = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.email || !formData.firstName || !formData.address) {
+      setErrorMessage('Please fill in all required contact and shipping details.');
       return;
     }
     setIsProcessing(true);
@@ -128,6 +170,7 @@ function CheckoutContent() {
         body: JSON.stringify({
           items: cart,
           customerEmail: formData.email,
+          formData,
           cartId: cartIdParam || undefined,
           returnUrl: window.location.origin,
         }),
@@ -141,60 +184,6 @@ function CheckoutContent() {
       window.location.href = data.url;
     } catch (err: any) {
       setErrorMessage(err.message || 'An error occurred while connecting to Stripe');
-      setIsProcessing(false);
-    }
-  };
-
-  // Direct Card Payment Handler
-  const handleDirectPayment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.email || !formData.firstName || !formData.address) {
-      setErrorMessage('Please fill in all required contact and shipping details.');
-      return;
-    }
-
-    if (paymentMode === 'stripe_checkout') {
-      await handleStripeCheckoutRedirect();
-      return;
-    }
-
-    if (!cardData.cardNumber || !cardData.expiry || !cardData.cvc) {
-      setErrorMessage('Please provide valid card details.');
-      return;
-    }
-
-    setIsProcessing(true);
-    setErrorMessage(null);
-
-    try {
-      const res = await fetch('/api/checkout/create-payment-intent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: cartSubtotal,
-          currency: 'gbp',
-          metadata: {
-            customerEmail: formData.email,
-            customerName: `${formData.firstName} ${formData.lastName}`,
-            cartId: cartIdParam || '',
-          },
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Payment processing failed');
-      }
-
-      await new Promise((r) => setTimeout(r, 1000));
-
-      const newOrderId = `POMA-${Math.floor(100000 + Math.random() * 900000)}`;
-      setConfirmedOrderId(newOrderId);
-      setOrderConfirmed(true);
-      clearCart();
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Payment failed. Please check card details.');
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -220,7 +209,7 @@ function CheckoutContent() {
           </p>
           <p className="mt-2 text-neutral-500 text-xs">
             A confirmation receipt and tracking details have been sent to{' '}
-            <span className="text-neutral-800 font-medium">{formData.email || 'your email'}</span>.
+            <span className="text-neutral-800 font-medium">{confirmedEmail || formData.email || 'your email'}</span>.
           </p>
 
           <div className="mt-10 rounded-2xl border border-neutral-200 bg-neutral-50 p-6 text-left space-y-4">
@@ -281,7 +270,7 @@ function CheckoutContent() {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
           {/* Left Column: Form & Payment */}
           <div className="lg:col-span-7 space-y-10">
-            <form onSubmit={handleDirectPayment} className="space-y-10">
+            <form onSubmit={handleStripeCheckoutRedirect} className="space-y-10">
               {/* 1. Contact Information */}
               <section className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -402,11 +391,8 @@ function CheckoutContent() {
                         className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none transition-colors"
                       >
                         <option value="United Kingdom">United Kingdom</option>
-                        <option value="United States">United States</option>
-                        <option value="Germany">Germany</option>
-                        <option value="France">France</option>
-                        <option value="Canada">Canada</option>
-                        <option value="Australia">Australia</option>
+                        <option value="Ireland">Ireland</option>
+                        <option value="India">India</option>
                       </select>
                     </div>
                   </div>
@@ -445,107 +431,31 @@ function CheckoutContent() {
                 </div>
               </section>
 
-              {/* 4. Payment Options */}
+              {/* 4. Payment */}
               <section className="space-y-4">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-900">
                   4. Payment
                 </h2>
 
-                {/* Mode Selector */}
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMode('stripe_checkout')}
-                    className={`rounded-xl p-4 border text-left transition-all cursor-pointer ${
-                      paymentMode === 'stripe_checkout'
-                        ? 'border-neutral-900 bg-neutral-50 text-neutral-900 ring-1 ring-neutral-900'
-                        : 'border-neutral-200 bg-white text-neutral-600 hover:border-neutral-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-semibold text-neutral-900">Stripe Checkout</span>
-                      <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-900 text-white">
+                        <CreditCard className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-neutral-900">Stripe Checkout</p>
+                        <p className="text-xs text-neutral-500">Credit / Debit Card, Apple Pay, Google Pay</p>
+                      </div>
                     </div>
-                    <p className="text-xs text-neutral-500">Cards, Apple Pay, Google Pay</p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMode('stripe_direct')}
-                    className={`rounded-xl p-4 border text-left transition-all cursor-pointer ${
-                      paymentMode === 'stripe_direct'
-                        ? 'border-neutral-900 bg-neutral-50 text-neutral-900 ring-1 ring-neutral-900'
-                        : 'border-neutral-200 bg-white text-neutral-600 hover:border-neutral-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-semibold text-neutral-900">Direct Card</span>
-                      <CreditCard className="h-4 w-4 text-neutral-700" />
-                    </div>
-                    <p className="text-xs text-neutral-500">Enter card details directly</p>
-                  </button>
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                      <ShieldCheck className="h-3.5 w-3.5" /> 256-bit Encrypted
+                    </span>
+                  </div>
+                  <p className="text-xs text-neutral-500 border-t border-neutral-200/80 pt-3">
+                    You will be redirected securely to Stripe to complete your payment details.
+                  </p>
                 </div>
-
-                {/* Direct Card Inputs (if direct card selected) */}
-                {paymentMode === 'stripe_direct' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5 space-y-4"
-                  >
-                    <div>
-                      <label className="block text-xs font-medium text-neutral-700 mb-1">Card number</label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          name="cardNumber"
-                          placeholder="4242 •••• •••• 4242"
-                          value={cardData.cardNumber}
-                          onChange={handleCardChange}
-                          className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 pl-11 text-sm font-mono text-neutral-900 placeholder-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
-                        />
-                        <CreditCard className="absolute left-3.5 top-3.5 h-4 w-4 text-neutral-400" />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-neutral-700 mb-1">Name on card</label>
-                      <input
-                        type="text"
-                        name="cardName"
-                        placeholder="John Doe"
-                        value={cardData.cardName}
-                        onChange={handleCardChange}
-                        className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 placeholder-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium text-neutral-700 mb-1">Expiration (MM/YY)</label>
-                        <input
-                          type="text"
-                          name="expiry"
-                          placeholder="12/28"
-                          value={cardData.expiry}
-                          onChange={handleCardChange}
-                          className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm font-mono text-neutral-900 placeholder-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-neutral-700 mb-1">CVC / CVV</label>
-                        <input
-                          type="text"
-                          name="cvc"
-                          placeholder="123"
-                          value={cardData.cvc}
-                          onChange={handleCardChange}
-                          className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm font-mono text-neutral-900 placeholder-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
-                        />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
               </section>
 
               {/* Submit Button */}
@@ -557,14 +467,12 @@ function CheckoutContent() {
                 {isProcessing ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin text-white" />
-                    Processing Payment...
+                    Connecting to Stripe...
                   </>
                 ) : (
                   <>
                     <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                    {paymentMode === 'stripe_checkout'
-                      ? `Proceed to Stripe Checkout • £${cartSubtotal.toFixed(2)}`
-                      : `Pay £${cartSubtotal.toFixed(2)} Now`}
+                    Proceed to Stripe Checkout • £{cartSubtotal.toFixed(2)}
                   </>
                 )}
               </button>

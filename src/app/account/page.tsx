@@ -20,9 +20,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 export default function AccountPage() {
-  const { customer, loading, logout } = useAuth();
+  const { customer, loading, logout, refreshProfile } = useAuth();
   const router = useRouter();
   const [openOrderIdx, setOpenOrderIdx] = useState<number | null>(null);
+  const [liveOrdersList, setLiveOrdersList] = useState<any[] | null>(null);
+
+  // Refresh latest order statuses from Medusa on mount
+  useEffect(() => {
+    refreshProfile();
+  }, [refreshProfile]);
 
   // Auth Guard
   useEffect(() => {
@@ -30,6 +36,20 @@ export default function AccountPage() {
       router.push('/login?redirect=/account');
     }
   }, [customer, loading, router]);
+
+  // Fetch live order statuses from Medusa on load
+  useEffect(() => {
+    if (customer && customer.email) {
+      fetch(`/api/account/orders?email=${encodeURIComponent(customer.email)}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.orders && Array.isArray(data.orders)) {
+            setLiveOrdersList(data.orders);
+          }
+        })
+        .catch((err) => console.warn('Could not fetch live order statuses:', err));
+    }
+  }, [customer]);
 
   if (loading || !customer) {
     return (
@@ -57,7 +77,8 @@ export default function AccountPage() {
     );
   }
 
-  const { firstName, lastName, email, phone, defaultAddress, orders = [] } = customer;
+  const { firstName, lastName, email, phone, defaultAddress, orders: initialOrders = [] } = customer;
+  const orders = liveOrdersList !== null ? liveOrdersList : initialOrders;
 
   const formatDate = (isoString: string) => {
     return new Date(isoString).toLocaleDateString('en-US', {
@@ -67,7 +88,7 @@ export default function AccountPage() {
     });
   };
 
-  const formatPrice = (amount: string, currencyCode: string = 'USD') => {
+  const formatPrice = (amount: string, currencyCode: string = 'GBP') => {
     const formatter = new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currencyCode,
@@ -77,8 +98,11 @@ export default function AccountPage() {
 
   const getStatusColor = (status: string) => {
     const lower = status.toLowerCase();
-    if (lower === 'paid' || lower === 'fulfilled') {
+    if (lower === 'paid' || lower === 'fulfilled' || lower === 'delivered') {
       return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    }
+    if (lower === 'shipped') {
+      return 'bg-blue-50 text-blue-700 border-blue-200';
     }
     if (lower === 'pending' || lower === 'unfulfilled') {
       return 'bg-amber-50 text-amber-700 border-amber-200';
@@ -184,7 +208,7 @@ export default function AccountPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {orders.map((order, orderIdx) => {
+                {orders.map((order: any, orderIdx: number) => {
                   const isOpen = openOrderIdx === orderIdx;
                   return (
                     <div
@@ -250,7 +274,7 @@ export default function AccountPage() {
                                 Line Items
                               </h4>
                               <div className="divide-y divide-neutral-100 bg-white border border-neutral-100 rounded-xl overflow-hidden shadow-inner">
-                                {order.lineItems.map((item, itemIdx) => (
+                                {order.lineItems.map((item: any, itemIdx: number) => (
                                   <div
                                     key={itemIdx}
                                     className="flex items-center justify-between p-4 gap-4"
