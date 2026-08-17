@@ -8,15 +8,15 @@ import { motion } from 'framer-motion';
 import {
   ShieldCheck,
   CheckCircle2,
-  CreditCard,
   Truck,
   ShoppingBag,
   Loader2,
   Sparkles,
-  AlertCircle
+  AlertCircle,
+  ChevronDown
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-import { createAndCompleteMedusaOrder } from '@/lib/medusa';
+import { useAuth } from '@/context/AuthContext';
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
@@ -25,6 +25,7 @@ function CheckoutContent() {
   const cartIdParam = searchParams.get('cart_id');
 
   const { cart, clearCart, cartSubtotal } = useCart();
+  const { customer } = useAuth();
   const hasClearedRef = useRef(false);
 
   // Customer & Shipping State
@@ -34,9 +35,9 @@ function CheckoutContent() {
     lastName: '',
     address: '',
     apartment: '',
+    country: 'United Kingdom',
     city: '',
     postalCode: '',
-    country: 'United Kingdom',
     phone: '',
   });
 
@@ -46,27 +47,42 @@ function CheckoutContent() {
   const [confirmedOrderId, setConfirmedOrderId] = useState('POMA-884920');
   const [confirmedEmail, setConfirmedEmail] = useState('');
 
-  // Load user from local session if logged in
+  // Autofill user address & contact from saved customer profile if logged in
   useEffect(() => {
-    try {
-      const activeUser = localStorage.getItem('poma_active_customer');
-      if (activeUser) {
-        const user = JSON.parse(activeUser);
-        setFormData((prev) => ({
-          ...prev,
-          email: user.email || prev.email,
-          firstName: user.firstName || prev.firstName,
-          lastName: user.lastName || prev.lastName,
-          address: user.defaultAddress?.address1 || prev.address,
-          city: user.defaultAddress?.city || prev.city,
-          postalCode: user.defaultAddress?.zip || prev.postalCode,
-          country: user.defaultAddress?.country || prev.country,
-        }));
-      }
-    } catch {
-      // ignore
+    if (customer) {
+      setFormData((prev) => ({
+        ...prev,
+        email: customer.email || prev.email,
+        firstName: customer.firstName || prev.firstName,
+        lastName: customer.lastName || prev.lastName,
+        phone: customer.phone || prev.phone,
+        address: customer.defaultAddress?.address1 || prev.address,
+        apartment: customer.defaultAddress?.address2 || prev.apartment,
+        city: customer.defaultAddress?.city || prev.city,
+        postalCode: customer.defaultAddress?.zip || prev.postalCode,
+        country: customer.defaultAddress?.country || prev.country || 'United Kingdom',
+      }));
+    } else {
+      try {
+        const activeUser = localStorage.getItem('poma_active_customer');
+        if (activeUser) {
+          const user = JSON.parse(activeUser);
+          setFormData((prev) => ({
+            ...prev,
+            email: user.email || prev.email,
+            firstName: user.firstName || prev.firstName,
+            lastName: user.lastName || prev.lastName,
+            phone: user.phone || prev.phone,
+            address: user.defaultAddress?.address1 || prev.address,
+            apartment: user.defaultAddress?.address2 || prev.apartment,
+            city: user.defaultAddress?.city || prev.city,
+            postalCode: user.defaultAddress?.zip || prev.postalCode,
+            country: user.defaultAddress?.country || prev.country || 'United Kingdom',
+          }));
+        }
+      } catch {}
     }
-  }, []);
+  }, [customer]);
 
   // Handle URL success state safely without render loops
   useEffect(() => {
@@ -90,7 +106,7 @@ function CheckoutContent() {
                 setConfirmedEmail(data.customerEmail);
               }
 
-              // Synchronize local customer profile and order history
+              // Synchronize local customer profile, address, and order history
               if (typeof window !== 'undefined') {
                 const targetEmail = (data.customerEmail || formData.email || '').toLowerCase();
                 const savedActive = localStorage.getItem('poma_active_customer');
@@ -101,6 +117,16 @@ function CheckoutContent() {
                     const parsed = JSON.parse(savedActive);
                     const existingOrders = parsed.orders || [];
                     parsed.orders = [data.order, ...existingOrders.filter((prevO: any) => prevO.id !== data.order.id)];
+                    if (!parsed.defaultAddress && formData.address) {
+                      parsed.defaultAddress = {
+                        id: `addr_${Date.now()}`,
+                        address1: formData.address,
+                        address2: formData.apartment || undefined,
+                        city: formData.city,
+                        zip: formData.postalCode,
+                        country: formData.country,
+                      };
+                    }
                     updatedCust = parsed;
                   } catch {}
                 }
@@ -108,9 +134,18 @@ function CheckoutContent() {
                 if (!updatedCust && targetEmail) {
                   updatedCust = {
                     id: `cus_${Math.floor(Math.random() * 100000000)}`,
-                    firstName: data.order.lineItems?.[0]?.title ? 'Valued' : 'Customer',
-                    lastName: 'Customer',
+                    firstName: formData.firstName || (data.order.lineItems?.[0]?.title ? 'Valued' : 'Customer'),
+                    lastName: formData.lastName || 'Customer',
                     email: targetEmail,
+                    phone: formData.phone || undefined,
+                    defaultAddress: formData.address ? {
+                      id: `addr_${Date.now()}`,
+                      address1: formData.address,
+                      address2: formData.apartment || undefined,
+                      city: formData.city,
+                      zip: formData.postalCode,
+                      country: formData.country,
+                    } : undefined,
                     orders: [data.order],
                   };
                 }
@@ -146,7 +181,7 @@ function CheckoutContent() {
           });
       }
     }
-  }, [isSuccessParam, searchParams, clearCart]);
+  }, [isSuccessParam, searchParams, clearCart, formData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -162,6 +197,28 @@ function CheckoutContent() {
     }
     setIsProcessing(true);
     setErrorMessage(null);
+
+    // Save shipping address into profile if user is creating/updating address
+    if (typeof window !== 'undefined' && formData.address) {
+      try {
+        const savedActive = localStorage.getItem('poma_active_customer');
+        let parsed: any = savedActive ? JSON.parse(savedActive) : {};
+        parsed.firstName = formData.firstName || parsed.firstName || '';
+        parsed.lastName = formData.lastName || parsed.lastName || '';
+        parsed.email = formData.email || parsed.email || '';
+        if (formData.phone) parsed.phone = formData.phone;
+        
+        parsed.defaultAddress = {
+          id: parsed.defaultAddress?.id || `addr_${Date.now()}`,
+          address1: formData.address,
+          address2: formData.apartment || undefined,
+          city: formData.city,
+          zip: formData.postalCode,
+          country: formData.country,
+        };
+        localStorage.setItem('poma_active_customer', JSON.stringify(parsed));
+      } catch {}
+    }
 
     try {
       const res = await fetch('/api/checkout/stripe-session', {
@@ -188,7 +245,7 @@ function CheckoutContent() {
     }
   };
 
-  // Order Confirmed / Success Screen in Pure White
+  // Order Confirmed / Success Screen
   if (orderConfirmed) {
     return (
       <main className="min-h-screen bg-white text-neutral-900 selection:bg-neutral-900 selection:text-white">
@@ -267,8 +324,8 @@ function CheckoutContent() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
-          {/* Left Column: Form & Payment */}
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 items-start">
+          {/* Left Column: Form & Checkout */}
           <div className="lg:col-span-7 space-y-10">
             <form onSubmit={handleStripeCheckoutRedirect} className="space-y-10">
               {/* 1. Contact Information */}
@@ -277,9 +334,11 @@ function CheckoutContent() {
                   <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-900">
                     1. Contact Information
                   </h2>
-                  <Link href="/login" className="text-xs text-neutral-500 hover:text-neutral-900 underline transition-colors">
-                    Already have an account? Log in
-                  </Link>
+                  {!customer && (
+                    <Link href="/login" className="text-xs text-neutral-500 hover:text-neutral-900 underline transition-colors">
+                      Already have an account? Log in
+                    </Link>
+                  )}
                 </div>
 
                 <div className="space-y-3">
@@ -338,7 +397,7 @@ function CheckoutContent() {
                       type="text"
                       name="address"
                       required
-                      placeholder="123 Luxury Avenue"
+                      placeholder="123 Main Street"
                       value={formData.address}
                       onChange={handleInputChange}
                       className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 placeholder-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none transition-colors"
@@ -357,7 +416,28 @@ function CheckoutContent() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* 1. Country */}
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">Country</label>
+                    <div className="relative">
+                      <select
+                        name="country"
+                        value={formData.country}
+                        onChange={handleInputChange}
+                        className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 pr-10 text-sm text-neutral-900 appearance-none cursor-pointer focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none transition-colors"
+                      >
+                        <option value="United Kingdom">United Kingdom</option>
+                        <option value="Ireland">Ireland</option>
+                        <option value="India">India</option>
+                      </select>
+                      <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500">
+                        <ChevronDown className="w-4 h-4" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. City & 3. Postal code */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-medium text-neutral-700 mb-1">City</label>
                       <input
@@ -382,23 +462,11 @@ function CheckoutContent() {
                         className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 placeholder-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none transition-colors"
                       />
                     </div>
-                    <div>
-                      <label className="block text-xs font-medium text-neutral-700 mb-1">Country</label>
-                      <select
-                        name="country"
-                        value={formData.country}
-                        onChange={handleInputChange}
-                        className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none transition-colors"
-                      >
-                        <option value="United Kingdom">United Kingdom</option>
-                        <option value="Ireland">Ireland</option>
-                        <option value="India">India</option>
-                      </select>
-                    </div>
                   </div>
 
+                  {/* 4. Phone number */}
                   <div>
-                    <label className="block text-xs font-medium text-neutral-700 mb-1">Phone number (for delivery updates)</label>
+                    <label className="block text-xs font-medium text-neutral-700 mb-1">Phone number</label>
                     <input
                       type="tel"
                       name="phone"
@@ -431,33 +499,6 @@ function CheckoutContent() {
                 </div>
               </section>
 
-              {/* 4. Payment */}
-              <section className="space-y-4">
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-900">
-                  4. Payment
-                </h2>
-
-                <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-900 text-white">
-                        <CreditCard className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-neutral-900">Stripe Checkout</p>
-                        <p className="text-xs text-neutral-500">Credit / Debit Card, Apple Pay, Google Pay</p>
-                      </div>
-                    </div>
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                      <ShieldCheck className="h-3.5 w-3.5" /> 256-bit Encrypted
-                    </span>
-                  </div>
-                  <p className="text-xs text-neutral-500 border-t border-neutral-200/80 pt-3">
-                    You will be redirected securely to Stripe to complete your payment details.
-                  </p>
-                </div>
-              </section>
-
               {/* Submit Button */}
               <button
                 type="submit"
@@ -467,22 +508,22 @@ function CheckoutContent() {
                 {isProcessing ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin text-white" />
-                    Connecting to Stripe...
+                    Redirecting to checkout...
                   </>
                 ) : (
                   <>
-                    <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                    Proceed to Stripe Checkout • £{cartSubtotal.toFixed(2)}
+                    Proceed to checkout
                   </>
                 )}
               </button>
             </form>
           </div>
 
-          {/* Right Column: Order Summary */}
-          <div className="lg:col-span-5">
-            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-6 lg:p-8 space-y-6 sticky top-12">
-              <div className="flex items-center justify-between border-b border-neutral-200 pb-4">
+          {/* Right Column: Sticky Order Summary */}
+          <div className="lg:col-span-5 lg:sticky lg:top-36 self-start z-10">
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 overflow-hidden shadow-sm">
+              {/* Header: Full width border, 20px padding */}
+              <div className="p-5 border-b border-neutral-200 flex items-center justify-between">
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-neutral-900">
                   Order Summary
                 </h3>
@@ -491,8 +532,8 @@ function CheckoutContent() {
                 </span>
               </div>
 
-              {/* Items List */}
-              <div className="max-h-80 overflow-y-auto space-y-4 pr-1 divide-y divide-neutral-200/60">
+              {/* Items List: 20px padding */}
+              <div className="p-5 max-h-80 overflow-y-auto space-y-4 divide-y divide-neutral-200/60">
                 {cart.length === 0 ? (
                   <div className="text-center py-8 text-neutral-500 text-sm">
                     <ShoppingBag className="mx-auto h-8 w-8 mb-2 opacity-40 text-neutral-400" />
@@ -528,8 +569,8 @@ function CheckoutContent() {
                 )}
               </div>
 
-              {/* Price Breakdown */}
-              <div className="border-t border-neutral-200 pt-4 space-y-2 text-sm">
+              {/* Price Breakdown: Full width top border, 20px padding, 12px gap, 16px font size */}
+              <div className="p-5 border-t border-neutral-200 space-y-3 text-[16px]">
                 <div className="flex justify-between text-neutral-600">
                   <span>Subtotal</span>
                   <span className="text-neutral-900 font-medium">£{cartSubtotal.toFixed(2)}</span>
@@ -542,22 +583,12 @@ function CheckoutContent() {
                   <span>Taxes (Included)</span>
                   <span className="text-neutral-900 font-mono">£0.00</span>
                 </div>
-                <div className="flex justify-between text-base font-semibold text-neutral-900 border-t border-neutral-200 pt-4">
-                  <span>Total</span>
-                  <span>£{cartSubtotal.toFixed(2)}</span>
-                </div>
               </div>
 
-              {/* Guarantees */}
-              <div className="rounded-xl border border-neutral-200 bg-white p-4 space-y-2 text-xs text-neutral-600">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                  <span>Stripe Protected • 256-bit SSL encryption</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Truck className="h-4 w-4 text-neutral-700" />
-                  <span>Free tracked global shipping & 30-day returns</span>
-                </div>
+              {/* Total Cost: Full width border, 20px padding, 16px font size */}
+              <div className="p-5 border-t border-neutral-200 flex justify-between items-center text-[16px] font-semibold text-neutral-900 bg-neutral-100/40">
+                <span>Total</span>
+                <span>£{cartSubtotal.toFixed(2)}</span>
               </div>
             </div>
           </div>

@@ -136,7 +136,7 @@ export default function CartDrawer() {
                   Shipping, taxes, and discounts calculated securely at payment checkout.
                 </p>
 
-                {/* Secure Checkout Button */}
+                {/* Proceed to Checkout Button */}
                 <button
                   disabled={isCheckingOut}
                   onClick={checkout}
@@ -145,12 +145,11 @@ export default function CartDrawer() {
                   {isCheckingOut ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin text-neutral-600" />
-                      Redirecting to secure checkout...
+                      Redirecting to checkout...
                     </>
                   ) : (
                     <>
-                      <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                      Secure checkout on Medusa
+                      Proceed to checkout
                     </>
                   )}
                 </button>
