@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { generateCheckoutLink } from '@/lib/medusa';
 
 export interface CartItem {
@@ -45,41 +45,55 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const saveCart = (newCart: CartItem[]) => {
+  const saveCart = useCallback((newCart: CartItem[]) => {
     setCart(newCart);
     localStorage.setItem('poma_cart', JSON.stringify(newCart));
-  };
+  }, []);
 
-  const addToCart = (item: Omit<CartItem, 'quantity'>, quantityToAdd = 1) => {
-    const existing = cart.find((i) => i.variantId === item.variantId);
-    if (existing) {
-      const updated = cart.map((i) =>
-        i.variantId === item.variantId ? { ...i, quantity: i.quantity + quantityToAdd } : i
-      );
-      saveCart(updated);
-    } else {
-      saveCart([...cart, { ...item, quantity: quantityToAdd }]);
-    }
+  const addToCart = useCallback((item: Omit<CartItem, 'quantity'>, quantityToAdd = 1) => {
+    setCart((prevCart) => {
+      const existing = prevCart.find((i) => i.variantId === item.variantId);
+      let updated: CartItem[];
+      if (existing) {
+        updated = prevCart.map((i) =>
+          i.variantId === item.variantId ? { ...i, quantity: i.quantity + quantityToAdd } : i
+        );
+      } else {
+        updated = [...prevCart, { ...item, quantity: quantityToAdd }];
+      }
+      localStorage.setItem('poma_cart', JSON.stringify(updated));
+      return updated;
+    });
     setIsOpen(true);
-  };
+  }, []);
 
-  const removeFromCart = (variantId: string) => {
-    saveCart(cart.filter((i) => i.variantId !== variantId));
-  };
+  const removeFromCart = useCallback((variantId: string) => {
+    setCart((prevCart) => {
+      const updated = prevCart.filter((i) => i.variantId !== variantId);
+      localStorage.setItem('poma_cart', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
 
-  const updateQuantity = (variantId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(variantId);
-    } else {
-      saveCart(cart.map((i) => (i.variantId === variantId ? { ...i, quantity } : i)));
-    }
-  };
+  const updateQuantity = useCallback((variantId: string, quantity: number) => {
+    setCart((prevCart) => {
+      let updated: CartItem[];
+      if (quantity <= 0) {
+        updated = prevCart.filter((i) => i.variantId !== variantId);
+      } else {
+        updated = prevCart.map((i) => (i.variantId === variantId ? { ...i, quantity } : i));
+      }
+      localStorage.setItem('poma_cart', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
 
-  const clearCart = () => {
-    saveCart([]);
-  };
+  const clearCart = useCallback(() => {
+    setCart([]);
+    localStorage.removeItem('poma_cart');
+  }, []);
 
-  const checkout = async () => {
+  const checkout = useCallback(async () => {
     if (cart.length === 0) return;
     try {
       setIsCheckingOut(true);
@@ -96,8 +110,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       console.error('Checkout redirect failed:', error);
       setIsCheckingOut(false);
     }
-  };
-
+  }, [cart]);
 
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
   const cartSubtotal = cart.reduce((acc, item) => acc + parseFloat(item.price) * item.quantity, 0);

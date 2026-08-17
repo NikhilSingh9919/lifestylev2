@@ -569,7 +569,7 @@ export async function generateCheckoutLink(
       const data = await res.json();
       const cartId = data.cart?.id;
       if (cartId) {
-        return `${backendUrl}/checkout?cart_id=${cartId}`;
+        return `/checkout?cart_id=${cartId}`;
       }
     }
   } catch (err) {
@@ -577,7 +577,7 @@ export async function generateCheckoutLink(
   }
 
   const cartParts = lineItems.map((item) => `${item.variantId}:${item.quantity}`).join(',');
-  return `${backendUrl}/checkout?cart=${cartParts}`;
+  return `/checkout?cart=${encodeURIComponent(cartParts)}`;
 }
 
 export interface Customer {
