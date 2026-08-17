@@ -84,7 +84,14 @@ export async function GET(request: Request) {
       };
     });
 
-    return NextResponse.json({ orders: formattedOrders });
+    const sortedOrders = [...formattedOrders].sort((a: any, b: any) => {
+      const timeA = a.processedAt ? new Date(a.processedAt).getTime() : 0;
+      const timeB = b.processedAt ? new Date(b.processedAt).getTime() : 0;
+      if (timeA !== timeB) return timeB - timeA;
+      return (b.orderNumber || b.displayId || 0) - (a.orderNumber || a.displayId || 0);
+    });
+
+    return NextResponse.json({ orders: sortedOrders });
   } catch (error: any) {
     console.error('Error fetching live customer orders:', error);
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });

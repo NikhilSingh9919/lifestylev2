@@ -1246,6 +1246,13 @@ export async function medusaGetCustomer(
             };
           });
 
+          orders.sort((a: any, b: any) => {
+            const timeA = a.processedAt ? new Date(a.processedAt).getTime() : 0;
+            const timeB = b.processedAt ? new Date(b.processedAt).getTime() : 0;
+            if (timeA !== timeB) return timeB - timeA;
+            return (b.orderNumber || 0) - (a.orderNumber || 0);
+          });
+
           const activeCustomer: Customer = {
             id: c.id,
             firstName: c.first_name || '',
