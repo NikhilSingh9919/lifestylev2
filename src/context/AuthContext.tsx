@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const loadProfile = async (token: string) => {
+  const loadProfile = React.useCallback(async (token: string) => {
     try {
       const { customer: fetchedCustomer } = await medusaGetCustomer(token);
       if (fetchedCustomer) {
@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       removeStoredToken();
       setCustomer(null);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const token = getStoredToken();
@@ -91,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [loadProfile]);
 
   const login = async (email: string, password: string) => {
     setLoading(true);
@@ -170,12 +170,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/');
   };
 
-  const refreshProfile = async () => {
+  const refreshProfile = React.useCallback(async () => {
     const token = getStoredToken();
     if (token) {
       await loadProfile(token);
     }
-  };
+  }, [loadProfile]);
 
   return (
     <AuthContext.Provider
